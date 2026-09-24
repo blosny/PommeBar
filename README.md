@@ -1,76 +1,104 @@
-# 🍎 PommeBar — Windows için Apple Music Widget'ı
-### *A sleek, modern Windows 11 taskbar mini-player & widget for Apple Music.*
+# PommeBar
 
-[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![Windows 11](https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4?logo=windows&logoColor=white)](https://microsoft.com/windows)
-[![WPF](https://img.shields.io/badge/UI-WPF%20%2B%20Fluent%20Design-0078D7)](https://github.com/lepoco/wpfui)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A modern, lightweight Windows 11 taskbar mini-player and companion widget for **Apple Music**.
 
-**PommeBar** (Fransızca elma anlamına gelen *'Pomme'* ve *'Taskbar'* birleşimi), Windows için Apple Music deneyimini masaüstünüze ve görev çubuğunuza taşıyan zarif, modern ve hafif bir mini oynatıcı widget'ıdır.
+Built with .NET 8 and WPF, PommeBar floats seamlessly above the Windows taskbar, providing instant playback controls, album art, interactive timeline, volume adjustment, and native Apple Music favorite integration without interrupting your workflow.
+
+![PommeBar on Windows 11 Taskbar](docs/screenshot.png)
 
 ---
 
-## ✨ Özellikler (Features)
+## Features
 
-- 🎵 **Gerçek Zamanlı Şarkı & Kapak Bilgisi:** Windows SMTC (*System Media Transport Controls*) entegrasyonu ile Apple Music'te çalan parçanın adını, sanatçısını ve albüm kapağını anlık olarak yansıtır.
-- ⏯️ **Eksiksiz Medya Kontrolleri:** Oynat/Durdur, Sonraki Parça ve Önceki Parça butonları.
-- ❤️ **Tek Tıkla Beğen (Love/Favorite):** Windows UI Automation altyapısını kullanarak arka plandaki Apple Music uygulamasını açmaya gerek kalmadan şarkıyı doğrudan favorilerinize ekler.
-- 📍 **Akıllı Görev Çubuğu Konumlandırma:**
-  - İlk açılışta veya sağ tık menüsünden **Sol (Başlat)**, **Orta (İkonlar)** veya **Sağ (Saat/Tepsi)** hizalaması seçilebilir.
-  - İstenildiği takdirde fare ile ekranın herhangi bir yerine serbestçe sürüklenebilir.
-- 🔊 **Fare Tekerleği ile Ses Kontrolü:** Widget üzerindeyken farenizin tekerleğini yukarı/aşağı kaydırarak sistem sesini anında ayarlayın.
-- 🪟 **Hızlı Erişim:** Şarkı bilgisine veya albüm kapağına tıkladığınızda Apple Music penceresini otomatik olarak öne getirir.
-- 🚀 **Windows ile Otomatik Başlatma:** Bilgisayar açıldığında widget'ın otomatik olarak görev çubuğunda hazır olmasını sağlar (sağ tık menüsünden açılıp kapatılabilir).
-- 🎨 **Modern Windows 11 Tasarımı:** Yuvarlatılmış köşeler, koyu akrilik arka plan, yumuşak gölgeler ve Always-on-Top (her zaman üstte) modu.
+- **Seamless Taskbar Integration**: Docks comfortably above the Windows 11 taskbar. Choose Left (Start menu), Center (Taskbar icons), or Right (System tray / clock), or position it anywhere on your desktop.
+- **Position Locking**: Lock widget position to prevent accidental dragging during playback or clicks.
+- **Expandable Flyout**: Expand upwards to reveal a larger artwork display, full timeline scrubber with timestamps, volume slider, and quick configuration switches.
+- **Apple Music Favorite/Like Integration**: Dedicated heart button interacts directly with the Apple Music for Windows desktop application to toggle favorites via UI Automation.
+- **System Media Transport Controls (SMTC)**: Real-time track metadata (Song Title, Artist, Album Art, Duration) synchronized directly with Windows media sessions.
+- **Smooth Volume Control**: Adjust master volume directly using your mouse wheel over the widget or via the expanded flyout slider powered by Windows CoreAudio.
+- **Windows Startup**: Run automatically on system boot via a built-in startup manager.
+- **Fluent 2 Dark Theme**: Clean, borderless design with rounded corners, subtle acrylic backgrounds, and elevation shadows matching the native Windows 11 aesthetics.
 
 ---
 
-## 📥 İndirme ve Çalıştırma (Download & Run)
+## Installation & Getting Started
 
-PommeBar **Self-Contained (Bağımsız)** olarak derlenebilir; yani bilgisayarınızda .NET SDK veya Runtime kurulu olmasa bile çalışır!
+### 1. Download Pre-compiled Binary
+1. Go to the [Releases](https://github.com/blosny/PommeBar/releases) page.
+2. Download the latest `PommeBar-win-x64.zip` release archive.
+3. Extract the folder to a permanent location (e.g., `C:\Program Files\PommeBar` or `C:\Tools\PommeBar`).
+4. Run `PommeBar.exe`.
 
-1. [Releases](https://github.com/blosny/PommeBar/releases) sayfasından en son sürümü indirin.
-2. `PommeBar.exe` dosyasına çift tıklayarak çalıştırın.
-3. Açılan konum penceresinden görev çubuğu tercihinizi belirleyin ve müziğin tadını çıkarın!
+### 2. First Run
+- On initial launch, PommeBar prompts you to select your preferred taskbar dock position:
+  - **Left**: Placed near the Start button.
+  - **Center**: Placed next to centered taskbar app icons.
+  - **Right**: Placed above the system tray and clock.
+- Make sure Apple Music for Windows is running and playing audio. PommeBar will immediately sync metadata and album artwork.
 
 ---
 
-## 🛠️ Kaynak Koddan Derleme (Building from Source)
+## Controls and Shortcuts
 
-Projeyi kendi ortamınızda geliştirmek veya derlemek için:
+| Action | Control |
+| :--- | :--- |
+| **Play / Pause** | Play/Pause icon button |
+| **Next / Previous Track** | Next / Previous icon buttons |
+| **Favorite Track (Apple Music)** | Heart icon button |
+| **Expand / Collapse Flyout** | Chevron Up / Down button |
+| **Adjust Volume** | Mouse scroll wheel anywhere on the widget, or slider in expanded view |
+| **Bring Apple Music to Front** | Click the song title or album artwork |
+| **Move Widget** | Left-click and drag (when position lock is disabled) |
+| **Lock / Unlock Position** | Lock icon in flyout or right-click context menu |
+| **Change Dock Position** | Location icon in flyout or right-click context menu |
+| **Context Menu** | Right-click the widget for settings, startup toggle, and exit |
 
-```bash
-# Repoyu klonlayın
-git clone https://github.com/blosny/PommeBar.git
-cd PommeBar
+---
 
-# Projeyi derleyin
-dotnet build
+## Project Structure
 
-# Bağımsız (Self-contained) paket oluşturun
-dotnet publish -c Release -r win-x64 --self-contained true -o ./publish
+```
+pomme-bar/
+├── App.xaml / App.xaml.cs          # WPF application lifecycle and Fluent theme resources
+├── MainWindow.xaml / .cs           # Mini-player UI, expanded flyout, events, and drag logic
+├── PositionDialog.xaml / .cs       # Initial setup & repositioning dialog
+├── MediaController.cs              # Windows SMTC session manager & media event listener
+├── AppleMusicAutomation.cs         # UI Automation engine to toggle Favorites in Apple Music
+├── VolumeController.cs             # Windows CoreAudio (IAudioEndpointVolume) COM wrapper
+├── StartupManager.cs               # Windows Registry Run key manager for automatic startup
+├── PommeBar.csproj                 # .NET 8 project configuration & dependencies
+└── docs/
+    └── screenshot.png              # Application preview image
 ```
 
 ---
 
-## 🎛️ Kullanım Kısayolları (Controls & Gestures)
+## Building from Source
 
-| Eylem | İşlev |
-|---|---|
-| **Sol Tık + Sürükle** | Widget'ı ekranda istediğiniz yere taşıyın |
-| **Şarkı Adına Tıklama** | Apple Music penceresini öne getirin |
-| **Fare Tekerleği (Scroll)** | Sistem sesini kısıp açın |
-| **Sağ Tık Menüsü** | Konumlandırma, Başlangıç ayarı ve Çıkış |
-| **❤️ Kalp Butonu** | Çalan parçayı Apple Music favorilerine ekleyin |
+### Prerequisites
+- Windows 10 (Build 19041+) or Windows 11
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+
+### Clone & Build
+```powershell
+# Clone repository
+git clone https://github.com/blosny/PommeBar.git
+cd PommeBar
+
+# Restore dependencies
+dotnet restore
+
+# Build debug build
+dotnet build
+
+# Publish standalone release
+dotnet publish -c Release -r win-x64 --self-contained true -o ./publish
+```
+
+The compiled executable and dependencies will be generated in `./publish/PommeBar.exe`.
 
 ---
 
-## 🤝 Katkıda Bulunma (Contributing)
+## License
 
-Katkılarınızı memnuniyetle bekliyoruz! Hata bildirimleri veya yeni özellik istekleri için lütfen [Issues](https://github.com/blosny/PommeBar/issues) açın veya bir Pull Request gönderin.
-
----
-
-## 📄 Lisans (License)
-
-Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
