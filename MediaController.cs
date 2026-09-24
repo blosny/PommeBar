@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Windows.Media.Control;
@@ -8,14 +10,28 @@ using Windows.Storage.Streams;
 
 namespace PommeBar;
 
+public enum MediaAppType
+{
+    Unknown,
+    AppleMusic,
+    Spotify,
+    Browser,
+    Other
+}
+
 public class MediaController
 {
     private GlobalSystemMediaTransportControlsSessionManager? _sessionManager;
     private GlobalSystemMediaTransportControlsSession? _currentSession;
+    private readonly HashSet<GlobalSystemMediaTransportControlsSession> _hookedSessions = new();
 
-    public event Action<string, string, BitmapImage?>? OnMediaChanged;
+    public event Action<string, string, BitmapImage?, MediaAppType, string, string>? OnMediaChanged;
     public event Action<bool>? OnPlaybackStateChanged;
     public event Action<double, double>? OnTimelineChanged;
+
+    public MediaAppType CurrentAppType { get; private set; } = MediaAppType.Unknown;
+    public string CurrentAppName { get; private set; } = "PommeBar";
+    public string CurrentAccentColor { get; private set; } = "#FF3B30";
 
     public async Task InitializeAsync()
     {
@@ -26,6 +42,8 @@ public class MediaController
             if (_sessionManager != null)
             {
                 _sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
+                _sessionManager.SessionsChanged += SessionManager_SessionsChanged;
+                HookAllSessions();
                 UpdateCurrentSession();
             }
         }
@@ -40,6 +58,91 @@ public class MediaController
         UpdateCurrentSession();
     }
 
+    private void SessionManager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
+    {
+        HookAllSessions();
+        UpdateCurrentSession();
+    }
+
+    private void HookAllSessions()
+    {
+        if (_sessionManager == null) return;
+        try
+        {
+            var sessions = _sessionManager.GetSessions();
+            if (sessions == null) return;
+
+            foreach (var session in sessions)
+            {
+                if (!_hookedSessions.Contains(session))
+                {
+                    _hookedSessions.Add(session);
+                    session.PlaybackInfoChanged += (s, e) =>
+                    {
+                        try
+                        {
+                            var info = s.GetPlaybackInfo();
+                            if (info?.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                            {
+                                UpdateCurrentSession();
+                            }
+                        }
+                        catch { }
+                    };
+                }
+            }
+        }
+        catch { }
+    }
+
+    private GlobalSystemMediaTransportControlsSession? PickBestSession()
+    {
+        if (_sessionManager == null) return null;
+
+        IReadOnlyList<GlobalSystemMediaTransportControlsSession>? sessions = null;
+        try
+        {
+            sessions = _sessionManager.GetSessions();
+        }
+        catch { }
+
+        if (sessions == null || sessions.Count == 0)
+        {
+            return _sessionManager.GetCurrentSession();
+        }
+
+        // 1. Prioritize any session that is currently PLAYING
+        foreach (var s in sessions)
+        {
+            try
+            {
+                var info = s.GetPlaybackInfo();
+                if (info?.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                {
+                    return s;
+                }
+            }
+            catch { }
+        }
+
+        // 2. Prioritize dedicated music services (Spotify, Apple Music) even if paused
+        foreach (var s in sessions)
+        {
+            try
+            {
+                string id = (s.SourceAppUserModelId ?? "").ToLowerInvariant();
+                if (id.Contains("spotify") || id.Contains("applemusic") || id.Contains("apple"))
+                {
+                    return s;
+                }
+            }
+            catch { }
+        }
+
+        // 3. Fallback to Windows default current session
+        return _sessionManager.GetCurrentSession() ?? sessions.FirstOrDefault();
+    }
+
     private void UpdateCurrentSession()
     {
         if (_currentSession != null)
@@ -49,7 +152,7 @@ public class MediaController
             _currentSession.TimelinePropertiesChanged -= CurrentSession_TimelinePropertiesChanged;
         }
 
-        _currentSession = _sessionManager?.GetCurrentSession();
+        _currentSession = PickBestSession();
 
         if (_currentSession != null)
         {
@@ -57,18 +160,49 @@ public class MediaController
             _currentSession.PlaybackInfoChanged += CurrentSession_PlaybackInfoChanged;
             _currentSession.TimelinePropertiesChanged += CurrentSession_TimelinePropertiesChanged;
             
+            var (type, name, color) = ParseSourceApp(_currentSession.SourceAppUserModelId);
+            CurrentAppType = type;
+            CurrentAppName = name;
+            CurrentAccentColor = color;
+
             _ = UpdateMediaPropertiesAsync();
             UpdatePlaybackInfo();
             UpdateTimelineInfo();
         }
         else
         {
+            CurrentAppType = MediaAppType.Unknown;
+            CurrentAppName = "PommeBar";
+            CurrentAccentColor = "#FF3B30";
+
             App.Current.Dispatcher.Invoke(() =>
             {
-                OnMediaChanged?.Invoke("Müzik Bekleniyor...", "PommeBar", null);
+                OnMediaChanged?.Invoke("Müzik Bekleniyor...", "PommeBar", null, CurrentAppType, CurrentAppName, CurrentAccentColor);
                 OnPlaybackStateChanged?.Invoke(false);
             });
         }
+    }
+
+    public static (MediaAppType type, string displayName, string accentColorHex) ParseSourceApp(string? appId)
+    {
+        if (string.IsNullOrEmpty(appId))
+            return (MediaAppType.Unknown, "PommeBar", "#FF3B30");
+
+        string id = appId.ToLowerInvariant();
+        if (id.Contains("spotify"))
+        {
+            return (MediaAppType.Spotify, "Spotify", "#1DB954");
+        }
+        if (id.Contains("applemusic") || id.Contains("apple"))
+        {
+            return (MediaAppType.AppleMusic, "Apple Music", "#FF3B30");
+        }
+        if (id.Contains("chrome") || id.Contains("msedge") || id.Contains("firefox") || id.Contains("opera") || id.Contains("brave"))
+        {
+            return (MediaAppType.Browser, "Tarayıcı", "#0A84FF");
+        }
+
+        return (MediaAppType.Other, "Medya", "#FF3B30");
     }
 
     private async void CurrentSession_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
@@ -160,12 +294,11 @@ public class MediaController
 
             App.Current.Dispatcher.Invoke(() =>
             {
-                OnMediaChanged?.Invoke(title, artist, albumArt);
+                OnMediaChanged?.Invoke(title, artist, albumArt, CurrentAppType, CurrentAppName, CurrentAccentColor);
             });
         }
         catch (Exception ex)
         {
-            try { System.IO.File.AppendAllText(@"C:\projects\pomme-bar\app.log", $"[{DateTime.Now}] Error getting media properties: {ex}\n"); } catch { }
             Debug.WriteLine($"Error getting media properties: {ex.Message}");
         }
     }

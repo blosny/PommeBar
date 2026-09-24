@@ -300,14 +300,31 @@ public partial class MainWindow : Window
         Application.Current.Shutdown();
     }
 
-    private void MediaController_OnMediaChanged(string title, string artist, BitmapImage? albumArt)
+    private MediaAppType _currentAppType = MediaAppType.Unknown;
+
+    private void MediaController_OnMediaChanged(string title, string artist, BitmapImage? albumArt, MediaAppType appType, string appName, string accentColorHex)
     {
         try
         {
+            _currentAppType = appType;
+
             SongTitleText.Text = title;
             ArtistNameText.Text = artist;
             ExpandedTitleText.Text = title;
             ExpandedArtistText.Text = artist;
+            ExpandedAlbumText.Text = $"{appName} • Windows";
+            ExpandedSourceText.Text = appName;
+
+            try
+            {
+                var color = (Color)ColorConverter.ConvertFromString(accentColorHex);
+                var brush = new SolidColorBrush(color);
+                TrackProgressBar.Foreground = brush;
+                ExpandedSourceIcon.Foreground = brush;
+                this.Resources["AccentFillColorDefaultBrush"] = brush;
+                this.Resources["ControlStrongFillColorDefaultBrush"] = brush;
+            }
+            catch { }
 
             if (albumArt != null)
             {
@@ -466,7 +483,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            var proc = System.Diagnostics.Process.GetProcessesByName("AppleMusic").FirstOrDefault();
+            string procName = _currentAppType == MediaAppType.Spotify ? "Spotify" : "AppleMusic";
+            var proc = System.Diagnostics.Process.GetProcessesByName(procName).FirstOrDefault();
             if (proc != null && proc.MainWindowHandle != IntPtr.Zero)
             {
                 ShowWindow(proc.MainWindowHandle, 9); // SW_RESTORE
