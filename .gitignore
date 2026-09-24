@@ -485,3 +485,7 @@ $RECYCLE.BIN/
 
 # Custom
 implementation_plan.md
+position.cfg
+*.cfg
+*.log
+publish/
