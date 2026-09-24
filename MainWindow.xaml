@@ -1,12 +1,48 @@
-﻿<Window x:Class="PommeBar.MainWindow"
+<ui:FluentWindow x:Class="PommeBar.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:PommeBar"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="PommeBar" Height="70" Width="420"
+        WindowBackdropType="Mica"
+        ExtendsContentIntoTitleBar="True"
+        WindowCornerPreference="Round"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    
     <Grid>
+        <Grid Margin="12,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
+            <!-- Album Art -->
+            <Border Width="46" Height="46" CornerRadius="8" Background="#20FFFFFF" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="MusicNote20" FontSize="24" Foreground="#AAFFFFFF" />
+            </Border>
+
+            <!-- Song Info -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0">
+                <TextBlock Text="Müzik Bekleniyor..." FontWeight="SemiBold" FontSize="15" Foreground="White" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="PommeBar" FontSize="13" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+            </StackPanel>
+
+            <!-- Controls -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Previous24}" Padding="8" Margin="0,0,4,0" Cursor="Hand" />
+                <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Play24}" Padding="8" Margin="0,0,4,0" Cursor="Hand" />
+                <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Next24}" Padding="8" Margin="0,0,4,0" Cursor="Hand" />
+                <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}" Foreground="#FF3B30" Padding="8" Cursor="Hand" />
+            </StackPanel>
+        </Grid>
     </Grid>
-</Window>
+</ui:FluentWindow>
