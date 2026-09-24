@@ -1,8 +1,10 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Controls;
 
@@ -70,6 +72,35 @@ public partial class MainWindow : Window
         };
     }
 
+    private void ClampToWorkArea()
+    {
+        var workArea = SystemParameters.WorkArea;
+        double h = this.Height > 0 ? this.Height : 70;
+        double w = this.Width > 0 ? this.Width : 450;
+
+        // Never allow sinking below the taskbar
+        double maxTop = workArea.Bottom - h - 10;
+        if (this.Top > maxTop)
+        {
+            this.Top = maxTop;
+        }
+        if (this.Top < workArea.Top + 10)
+        {
+            this.Top = workArea.Top + 10;
+        }
+
+        // Never allow going off-screen horizontally
+        double maxLeft = workArea.Right - w - 10;
+        if (this.Left > maxLeft)
+        {
+            this.Left = maxLeft;
+        }
+        if (this.Left < workArea.Left + 10)
+        {
+            this.Left = workArea.Left + 10;
+        }
+    }
+
     private void LoadSettings()
     {
         try
@@ -86,10 +117,12 @@ public partial class MainWindow : Window
                     SetPositionLock(locked, save: false);
                 }
                 if (lines.Length >= 4 && _currentPositionMode == "custom" 
-                    && double.TryParse(lines[2], out double l) && double.TryParse(lines[3], out double t))
+                    && double.TryParse(lines[2], NumberStyles.Any, CultureInfo.InvariantCulture, out double l) 
+                    && double.TryParse(lines[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double t))
                 {
                     this.Left = l;
                     this.Top = t;
+                    ClampToWorkArea();
                     return;
                 }
             }
@@ -110,7 +143,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            string content = $"{_currentPositionMode}\n{_isLocked}\n{this.Left}\n{this.Top}";
+            ClampToWorkArea();
+            string content = $"{_currentPositionMode}\n{_isLocked}\n{this.Left.ToString(CultureInfo.InvariantCulture)}\n{this.Top.ToString(CultureInfo.InvariantCulture)}";
             File.WriteAllText(ConfigPath, content);
         }
         catch { }
@@ -120,8 +154,8 @@ public partial class MainWindow : Window
     {
         _currentPositionMode = position;
         var workArea = SystemParameters.WorkArea;
-        double w = this.ActualWidth > 0 ? this.ActualWidth : 440;
-        double h = this.ActualHeight > 0 ? this.ActualHeight : 70;
+        double w = this.Width > 0 ? this.Width : 450;
+        double h = 70;
 
         switch (position)
         {
@@ -137,6 +171,7 @@ public partial class MainWindow : Window
                 break;
         }
         this.Top = workArea.Bottom - h - 10;
+        ClampToWorkArea();
         SaveSettings();
     }
 
@@ -144,11 +179,21 @@ public partial class MainWindow : Window
     {
         _isLocked = locked;
         MenuLockPos.IsChecked = locked;
-        BtnLock.Icon = new Wpf.Ui.Controls.SymbolIcon
+
+        var symbol = locked ? SymbolRegular.LockClosed24 : SymbolRegular.LockOpen24;
+        string tip = locked ? "Konum Kilitli (Sabit)" : "Konum Kilidi Açık (Taşınabilir)";
+
+        BtnLock.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = symbol };
+        BtnLock.ToolTip = tip;
+
+        if (BtnLockCompact != null)
         {
-            Symbol = locked ? Wpf.Ui.Controls.SymbolRegular.LockClosed24 : Wpf.Ui.Controls.SymbolRegular.LockOpen24
-        };
-        BtnLock.ToolTip = locked ? "Konum Kilitli (Sürüklenemez)" : "Konum Kilidi Açık (Sürüklenebilir)";
+            BtnLockCompact.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = symbol };
+            BtnLockCompact.ToolTip = tip;
+            BtnLockCompact.Foreground = locked 
+                ? new SolidColorBrush(Color.FromRgb(255, 59, 48)) 
+                : new SolidColorBrush(Color.FromArgb(180, 255, 255, 255));
+        }
 
         if (save)
         {
@@ -172,11 +217,18 @@ public partial class MainWindow : Window
         var workArea = SystemParameters.WorkArea;
         double targetHeight = _isExpanded ? 225 : 70;
 
+        // Keep the bottom edge anchored above the taskbar
+        double currentBottom = this.Top + (this.ActualHeight > 0 ? this.ActualHeight : this.Height);
+        if (currentBottom > workArea.Bottom - 5 || currentBottom < workArea.Top + 100)
+        {
+            currentBottom = workArea.Bottom - 10;
+        }
+
         if (_isExpanded)
         {
             ExpandedPanel.Visibility = Visibility.Visible;
             TrackProgressBar.Visibility = Visibility.Collapsed;
-            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.ChevronDown24 };
+            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = SymbolRegular.ChevronDown24 };
             BtnExpand.ToolTip = "Daralt";
             SyncVolumeUI();
         }
@@ -184,13 +236,13 @@ public partial class MainWindow : Window
         {
             ExpandedPanel.Visibility = Visibility.Collapsed;
             TrackProgressBar.Visibility = Visibility.Visible;
-            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.ChevronUp24 };
+            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = SymbolRegular.ChevronUp24 };
             BtnExpand.ToolTip = "Genişletilmiş Görünüm";
         }
 
-        double delta = targetHeight - this.Height;
         this.Height = targetHeight;
-        this.Top = Math.Max(workArea.Top, this.Top - delta);
+        this.Top = currentBottom - targetHeight;
+        ClampToWorkArea();
     }
 
     private void MenuChoosePos_Click(object sender, RoutedEventArgs e)
@@ -289,7 +341,7 @@ public partial class MainWindow : Window
             _isPlaying = isPlaying;
             BtnPlayPause.Icon = new Wpf.Ui.Controls.SymbolIcon
             {
-                Symbol = isPlaying ? Wpf.Ui.Controls.SymbolRegular.Pause24 : Wpf.Ui.Controls.SymbolRegular.Play24
+                Symbol = isPlaying ? SymbolRegular.Pause24 : SymbolRegular.Play24
             };
         }
         catch (Exception ex)
@@ -386,10 +438,13 @@ public partial class MainWindow : Window
 
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (!_isLocked && e.ChangedButton == MouseButton.Left)
+        if (_isLocked) return;
+
+        if (e.ChangedButton == MouseButton.Left)
         {
             this.DragMove();
             _currentPositionMode = "custom";
+            ClampToWorkArea();
             SaveSettings();
         }
     }
