@@ -66,6 +66,9 @@
                 <ui:Button x:Name="BtnNext" Appearance="Transparent" Icon="{ui:SymbolIcon Next24}" Padding="8" Margin="0,0,4,0" Cursor="Hand" Click="BtnNext_Click" />
                 <ui:Button x:Name="BtnHeart" Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}" Foreground="#FF3B30" Padding="8" Cursor="Hand" Click="BtnHeart_Click" />
             </StackPanel>
+
+            <!-- Sleek Track Progress Line -->
+            <ProgressBar Grid.ColumnSpan="3" x:Name="TrackProgressBar" Minimum="0" Maximum="100" Value="0" Height="2" VerticalAlignment="Bottom" Background="Transparent" Foreground="#FF3B30" BorderThickness="0" Margin="4,0,4,3" />
         </Grid>
     </Border>
 </Window>

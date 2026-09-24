@@ -15,6 +15,7 @@ public class MediaController
 
     public event Action<string, string, BitmapImage?>? OnMediaChanged;
     public event Action<bool>? OnPlaybackStateChanged;
+    public event Action<double, double>? OnTimelineChanged;
 
     public async Task InitializeAsync()
     {
@@ -45,6 +46,7 @@ public class MediaController
         {
             _currentSession.MediaPropertiesChanged -= CurrentSession_MediaPropertiesChanged;
             _currentSession.PlaybackInfoChanged -= CurrentSession_PlaybackInfoChanged;
+            _currentSession.TimelinePropertiesChanged -= CurrentSession_TimelinePropertiesChanged;
         }
 
         _currentSession = _sessionManager?.GetCurrentSession();
@@ -53,9 +55,11 @@ public class MediaController
         {
             _currentSession.MediaPropertiesChanged += CurrentSession_MediaPropertiesChanged;
             _currentSession.PlaybackInfoChanged += CurrentSession_PlaybackInfoChanged;
+            _currentSession.TimelinePropertiesChanged += CurrentSession_TimelinePropertiesChanged;
             
             _ = UpdateMediaPropertiesAsync();
             UpdatePlaybackInfo();
+            UpdateTimelineInfo();
         }
         else
         {
@@ -75,6 +79,30 @@ public class MediaController
     private void CurrentSession_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
     {
         UpdatePlaybackInfo();
+    }
+
+    private void CurrentSession_TimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
+    {
+        UpdateTimelineInfo();
+    }
+
+    public void UpdateTimelineInfo()
+    {
+        if (_currentSession == null) return;
+        try
+        {
+            var timeline = _currentSession.GetTimelineProperties();
+            if (timeline != null)
+            {
+                double current = timeline.Position.TotalSeconds;
+                double total = timeline.EndTime.TotalSeconds;
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    OnTimelineChanged?.Invoke(current, total);
+                });
+            }
+        }
+        catch { }
     }
 
     private async Task UpdateMediaPropertiesAsync()

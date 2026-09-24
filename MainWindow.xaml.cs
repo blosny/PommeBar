@@ -9,6 +9,10 @@ public partial class MainWindow : Window
 {
     private readonly MediaController _mediaController;
     private static readonly string ConfigPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "position.cfg");
+    private readonly System.Windows.Threading.DispatcherTimer _timelineTimer;
+    private double _currentPositionSeconds = 0;
+    private double _totalDurationSeconds = 100;
+    private bool _isPlaying = false;
 
     public MainWindow()
     {
@@ -17,6 +21,21 @@ public partial class MainWindow : Window
         _mediaController = new MediaController();
         _mediaController.OnMediaChanged += MediaController_OnMediaChanged;
         _mediaController.OnPlaybackStateChanged += MediaController_OnPlaybackStateChanged;
+        _mediaController.OnTimelineChanged += MediaController_OnTimelineChanged;
+
+        _timelineTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        _timelineTimer.Tick += (s, e) =>
+        {
+            if (_isPlaying && _currentPositionSeconds < _totalDurationSeconds)
+            {
+                _currentPositionSeconds += 1;
+                TrackProgressBar.Value = _currentPositionSeconds;
+            }
+        };
+        _timelineTimer.Start();
         
         this.Loaded += async (s, e) =>
         {
@@ -141,6 +160,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            _isPlaying = isPlaying;
             BtnPlayPause.Icon = new Wpf.Ui.Controls.SymbolIcon
             {
                 Symbol = isPlaying ? Wpf.Ui.Controls.SymbolRegular.Pause24 : Wpf.Ui.Controls.SymbolRegular.Play24
@@ -149,6 +169,17 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"OnPlaybackStateChanged ERROR: {ex}");
+        }
+    }
+
+    private void MediaController_OnTimelineChanged(double currentSeconds, double totalSeconds)
+    {
+        if (totalSeconds > 0)
+        {
+            _currentPositionSeconds = currentSeconds;
+            _totalDurationSeconds = totalSeconds;
+            TrackProgressBar.Maximum = totalSeconds;
+            TrackProgressBar.Value = currentSeconds;
         }
     }
 
