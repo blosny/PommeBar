@@ -30,13 +30,11 @@ public partial class MainWindow : FluentWindow
         {
             AlbumArtImage.Source = albumArt;
             AlbumArtImage.Visibility = Visibility.Visible;
-            AlbumArtPlaceholder.Visibility = Visibility.Collapsed;
         }
         else
         {
             AlbumArtImage.Source = null;
             AlbumArtImage.Visibility = Visibility.Collapsed;
-            AlbumArtPlaceholder.Visibility = Visibility.Visible;
         }
     }
 
