@@ -44,7 +44,7 @@
                 <ui:Button x:Name="BtnPrevious" Appearance="Transparent" Icon="{ui:SymbolIcon Previous24}" Padding="8" Margin="0,0,4,0" Cursor="Hand" Click="BtnPrevious_Click" />
                 <ui:Button x:Name="BtnPlayPause" Appearance="Transparent" Icon="{ui:SymbolIcon Play24}" Padding="8" Margin="0,0,4,0" Cursor="Hand" Click="BtnPlayPause_Click" />
                 <ui:Button x:Name="BtnNext" Appearance="Transparent" Icon="{ui:SymbolIcon Next24}" Padding="8" Margin="0,0,4,0" Cursor="Hand" Click="BtnNext_Click" />
-                <ui:Button x:Name="BtnHeart" Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}" Foreground="#FF3B30" Padding="8" Cursor="Hand" />
+                <ui:Button x:Name="BtnHeart" Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}" Foreground="#FF3B30" Padding="8" Cursor="Hand" Click="BtnHeart_Click" />
             </StackPanel>
         </Grid>
     </Grid>

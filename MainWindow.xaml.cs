@@ -61,6 +61,19 @@ public partial class MainWindow : FluentWindow
         await _mediaController.SkipNextAsync();
     }
 
+    private async void BtnHeart_Click(object sender, RoutedEventArgs e)
+    {
+        BtnHeart.IsEnabled = false;
+        try
+        {
+            await AppleMusicAutomation.ToggleFavoriteAsync();
+        }
+        finally
+        {
+            BtnHeart.IsEnabled = true;
+        }
+    }
+
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Left)
