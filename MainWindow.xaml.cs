@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -10,9 +13,14 @@ public partial class MainWindow : Window
     private readonly MediaController _mediaController;
     private static readonly string ConfigPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "position.cfg");
     private readonly System.Windows.Threading.DispatcherTimer _timelineTimer;
+    
     private double _currentPositionSeconds = 0;
     private double _totalDurationSeconds = 100;
     private bool _isPlaying = false;
+    private bool _isLocked = false;
+    private bool _isExpanded = false;
+    private bool _isUserSeeking = false;
+    private string _currentPositionMode = "right";
 
     public MainWindow()
     {
@@ -33,6 +41,11 @@ public partial class MainWindow : Window
             {
                 _currentPositionSeconds += 1;
                 TrackProgressBar.Value = _currentPositionSeconds;
+                if (!_isUserSeeking)
+                {
+                    TimelineSlider.Value = _currentPositionSeconds;
+                    TimeCurrentText.Text = FormatTime(_currentPositionSeconds);
+                }
             }
         };
         _timelineTimer.Start();
@@ -41,21 +54,13 @@ public partial class MainWindow : Window
         {
             try
             {
-                string savedPos = "right";
-                if (System.IO.File.Exists(ConfigPath))
-                {
-                    savedPos = System.IO.File.ReadAllText(ConfigPath).Trim().ToLower();
-                }
-                else
-                {
-                    // Prompt user on first run where to position on taskbar
-                    var dlg = new PositionDialog();
-                    dlg.ShowDialog();
-                    savedPos = dlg.SelectedPosition;
-                }
-                ApplyPosition(savedPos);
+                LoadSettings();
 
-                MenuStartup.IsChecked = StartupManager.IsStartupEnabled();
+                bool startup = StartupManager.IsStartupEnabled();
+                MenuStartup.IsChecked = startup;
+                ChkStartup.IsChecked = startup;
+
+                SyncVolumeUI();
                 await _mediaController.InitializeAsync();
             }
             catch (Exception ex)
@@ -65,10 +70,57 @@ public partial class MainWindow : Window
         };
     }
 
+    private void LoadSettings()
+    {
+        try
+        {
+            if (File.Exists(ConfigPath))
+            {
+                var lines = File.ReadAllLines(ConfigPath);
+                if (lines.Length > 0 && !string.IsNullOrWhiteSpace(lines[0]))
+                {
+                    _currentPositionMode = lines[0].Trim().ToLower();
+                }
+                if (lines.Length > 1 && bool.TryParse(lines[1], out bool locked))
+                {
+                    SetPositionLock(locked, save: false);
+                }
+                if (lines.Length >= 4 && _currentPositionMode == "custom" 
+                    && double.TryParse(lines[2], out double l) && double.TryParse(lines[3], out double t))
+                {
+                    this.Left = l;
+                    this.Top = t;
+                    return;
+                }
+            }
+            else
+            {
+                // First run: prompt user for initial position
+                var dlg = new PositionDialog();
+                dlg.ShowDialog();
+                _currentPositionMode = dlg.SelectedPosition;
+            }
+        }
+        catch { }
+
+        ApplyPosition(_currentPositionMode);
+    }
+
+    private void SaveSettings()
+    {
+        try
+        {
+            string content = $"{_currentPositionMode}\n{_isLocked}\n{this.Left}\n{this.Top}";
+            File.WriteAllText(ConfigPath, content);
+        }
+        catch { }
+    }
+
     private void ApplyPosition(string position)
     {
+        _currentPositionMode = position;
         var workArea = SystemParameters.WorkArea;
-        double w = this.ActualWidth > 0 ? this.ActualWidth : 430;
+        double w = this.ActualWidth > 0 ? this.ActualWidth : 440;
         double h = this.ActualHeight > 0 ? this.ActualHeight : 70;
 
         switch (position)
@@ -85,8 +137,60 @@ public partial class MainWindow : Window
                 break;
         }
         this.Top = workArea.Bottom - h - 10;
+        SaveSettings();
+    }
 
-        try { System.IO.File.WriteAllText(ConfigPath, position); } catch { }
+    private void SetPositionLock(bool locked, bool save = true)
+    {
+        _isLocked = locked;
+        MenuLockPos.IsChecked = locked;
+        BtnLock.Icon = new Wpf.Ui.Controls.SymbolIcon
+        {
+            Symbol = locked ? Wpf.Ui.Controls.SymbolRegular.LockClosed24 : Wpf.Ui.Controls.SymbolRegular.LockOpen24
+        };
+        BtnLock.ToolTip = locked ? "Konum Kilitli (Sürüklenemez)" : "Konum Kilidi Açık (Sürüklenebilir)";
+
+        if (save)
+        {
+            SaveSettings();
+        }
+    }
+
+    private void BtnLock_Click(object sender, RoutedEventArgs e)
+    {
+        SetPositionLock(!_isLocked);
+    }
+
+    private void MenuLockPos_Click(object sender, RoutedEventArgs e)
+    {
+        SetPositionLock(MenuLockPos.IsChecked);
+    }
+
+    private void BtnExpand_Click(object sender, RoutedEventArgs e)
+    {
+        _isExpanded = !_isExpanded;
+        var workArea = SystemParameters.WorkArea;
+        double targetHeight = _isExpanded ? 225 : 70;
+
+        if (_isExpanded)
+        {
+            ExpandedPanel.Visibility = Visibility.Visible;
+            TrackProgressBar.Visibility = Visibility.Collapsed;
+            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.ChevronDown24 };
+            BtnExpand.ToolTip = "Daralt";
+            SyncVolumeUI();
+        }
+        else
+        {
+            ExpandedPanel.Visibility = Visibility.Collapsed;
+            TrackProgressBar.Visibility = Visibility.Visible;
+            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.ChevronUp24 };
+            BtnExpand.ToolTip = "Genişletilmiş Görünüm";
+        }
+
+        double delta = targetHeight - this.Height;
+        this.Height = targetHeight;
+        this.Top = Math.Max(workArea.Top, this.Top - delta);
     }
 
     private void MenuChoosePos_Click(object sender, RoutedEventArgs e)
@@ -110,6 +214,18 @@ public partial class MainWindow : Window
         {
             MenuStartup.IsChecked = !isEnabled;
         }
+        ChkStartup.IsChecked = MenuStartup.IsChecked;
+    }
+
+    private void ChkStartup_Click(object sender, RoutedEventArgs e)
+    {
+        bool isEnabled = ChkStartup.IsChecked == true;
+        bool result = StartupManager.SetStartup(isEnabled);
+        if (!result)
+        {
+            ChkStartup.IsChecked = !isEnabled;
+        }
+        MenuStartup.IsChecked = ChkStartup.IsChecked == true;
     }
 
     private void MenuGitHub_Click(object sender, RoutedEventArgs e)
@@ -136,18 +252,28 @@ public partial class MainWindow : Window
         {
             SongTitleText.Text = title;
             ArtistNameText.Text = artist;
+            ExpandedTitleText.Text = title;
+            ExpandedArtistText.Text = artist;
 
             if (albumArt != null)
             {
                 AlbumArtImage.Source = albumArt;
                 AlbumArtImage.Visibility = Visibility.Visible;
                 AlbumArtPlaceholder.Visibility = Visibility.Collapsed;
+
+                ExpandedArtImage.Source = albumArt;
+                ExpandedArtImage.Visibility = Visibility.Visible;
+                ExpandedArtPlaceholder.Visibility = Visibility.Collapsed;
             }
             else
             {
                 AlbumArtImage.Source = null;
                 AlbumArtImage.Visibility = Visibility.Collapsed;
                 AlbumArtPlaceholder.Visibility = Visibility.Visible;
+
+                ExpandedArtImage.Source = null;
+                ExpandedArtImage.Visibility = Visibility.Collapsed;
+                ExpandedArtPlaceholder.Visibility = Visibility.Visible;
             }
         }
         catch (Exception ex)
@@ -180,7 +306,54 @@ public partial class MainWindow : Window
             _totalDurationSeconds = totalSeconds;
             TrackProgressBar.Maximum = totalSeconds;
             TrackProgressBar.Value = currentSeconds;
+
+            if (!_isUserSeeking)
+            {
+                TimelineSlider.Maximum = totalSeconds;
+                TimelineSlider.Value = currentSeconds;
+                TimeCurrentText.Text = FormatTime(currentSeconds);
+                TimeTotalText.Text = FormatTime(totalSeconds);
+            }
         }
+    }
+
+    private static string FormatTime(double seconds)
+    {
+        if (seconds < 0 || double.IsNaN(seconds) || double.IsInfinity(seconds)) return "0:00";
+        var ts = TimeSpan.FromSeconds(seconds);
+        return ts.TotalHours >= 1 
+            ? $"{(int)ts.TotalHours}:{ts.Minutes:D2}:{ts.Seconds:D2}" 
+            : $"{(int)ts.TotalMinutes}:{ts.Seconds:D2}";
+    }
+
+    private void TimelineSlider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _isUserSeeking = true;
+    }
+
+    private async void TimelineSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        _isUserSeeking = false;
+        _currentPositionSeconds = TimelineSlider.Value;
+        TimeCurrentText.Text = FormatTime(_currentPositionSeconds);
+        TrackProgressBar.Value = _currentPositionSeconds;
+        await _mediaController.SeekAsync(TimelineSlider.Value);
+    }
+
+    private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (VolumeLabel == null) return;
+        float level = (float)(VolumeSlider.Value / 100.0);
+        VolumeController.SetVolume(level);
+        VolumeLabel.Text = $"{(int)VolumeSlider.Value}%";
+    }
+
+    private void SyncVolumeUI()
+    {
+        if (VolumeSlider == null || VolumeLabel == null) return;
+        float vol = VolumeController.GetVolume();
+        VolumeSlider.Value = vol * 100.0;
+        VolumeLabel.Text = $"{(int)(vol * 100)}%";
     }
 
     private async void BtnPrevious_Click(object sender, RoutedEventArgs e)
@@ -213,9 +386,11 @@ public partial class MainWindow : Window
 
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Left)
+        if (!_isLocked && e.ChangedButton == MouseButton.Left)
         {
             this.DragMove();
+            _currentPositionMode = "custom";
+            SaveSettings();
         }
     }
 
@@ -224,9 +399,6 @@ public partial class MainWindow : Window
 
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
-    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
 
     private void SongInfo_Click(object sender, MouseButtonEventArgs e)
     {
@@ -244,12 +416,8 @@ public partial class MainWindow : Window
 
     private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
     {
-        const byte VK_VOLUME_UP = 0xAF;
-        const byte VK_VOLUME_DOWN = 0xAE;
-        const uint KEYEVENTF_KEYUP = 0x0002;
-
-        byte key = e.Delta > 0 ? VK_VOLUME_UP : VK_VOLUME_DOWN;
-        keybd_event(key, 0, 0, 0);
-        keybd_event(key, 0, KEYEVENTF_KEYUP, 0);
+        float delta = e.Delta > 0 ? 0.02f : -0.02f;
+        VolumeController.ChangeVolume(delta);
+        SyncVolumeUI();
     }
 }

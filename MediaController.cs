@@ -200,4 +200,17 @@ public class MediaController
         if (_currentSession != null)
             await _currentSession.TrySkipPreviousAsync();
     }
+
+    public async Task SeekAsync(double seconds)
+    {
+        if (_currentSession != null)
+        {
+            try
+            {
+                long ticks = (long)(seconds * 10_000_000);
+                await _currentSession.TryChangePlaybackPositionAsync(ticks);
+            }
+            catch { }
+        }
+    }
 }
