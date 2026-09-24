@@ -13,6 +13,15 @@
         WindowStartupLocation="CenterScreen"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
     
+    <ui:FluentWindow.ContextMenu>
+        <ContextMenu>
+            <MenuItem x:Name="MenuStartup" Header="Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuStartup_Click" />
+            <Separator />
+            <MenuItem Header="GitHub (blosny/PommeBar)" Click="MenuGitHub_Click" />
+            <MenuItem Header="Çıkış" Click="MenuExit_Click" />
+        </ContextMenu>
+    </ui:FluentWindow.ContextMenu>
+
     <Grid>
         <Grid Margin="12,0">
             <Grid.ColumnDefinitions>

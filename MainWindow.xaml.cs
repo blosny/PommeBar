@@ -18,7 +18,39 @@ public partial class MainWindow : FluentWindow
         _mediaController.OnMediaChanged += MediaController_OnMediaChanged;
         _mediaController.OnPlaybackStateChanged += MediaController_OnPlaybackStateChanged;
         
-        this.Loaded += async (s, e) => await _mediaController.InitializeAsync();
+        this.Loaded += async (s, e) =>
+        {
+            MenuStartup.IsChecked = StartupManager.IsStartupEnabled();
+            await _mediaController.InitializeAsync();
+        };
+    }
+
+    private void MenuStartup_Click(object sender, RoutedEventArgs e)
+    {
+        bool isEnabled = MenuStartup.IsChecked;
+        bool result = StartupManager.SetStartup(isEnabled);
+        if (!result)
+        {
+            MenuStartup.IsChecked = !isEnabled;
+        }
+    }
+
+    private void MenuGitHub_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://github.com/blosny/PommeBar",
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    }
+
+    private void MenuExit_Click(object sender, RoutedEventArgs e)
+    {
+        Application.Current.Shutdown();
     }
 
     private void MediaController_OnMediaChanged(string title, string artist, BitmapImage? albumArt)
