@@ -92,24 +92,42 @@ public class MediaController
 
             if (properties.Thumbnail != null)
             {
-                using var stream = await properties.Thumbnail.OpenReadAsync();
-                var buffer = new Windows.Storage.Streams.Buffer((uint)stream.Size);
-                await stream.ReadAsync(buffer, buffer.Capacity, InputStreamOptions.None);
-                
-                using var reader = DataReader.FromBuffer(buffer);
-                byte[] fileBytes = new byte[buffer.Length];
-                reader.ReadBytes(fileBytes);
-                
-                App.Current.Dispatcher.Invoke(() =>
+                try
                 {
-                    using var memoryStream = new MemoryStream(fileBytes);
-                    albumArt = new BitmapImage();
-                    albumArt.BeginInit();
-                    albumArt.CacheOption = BitmapCacheOption.OnLoad;
-                    albumArt.StreamSource = memoryStream;
-                    albumArt.EndInit();
-                    albumArt.Freeze();
-                });
+                    using var stream = await properties.Thumbnail.OpenReadAsync();
+                    if (stream != null && stream.Size > 0)
+                    {
+                        var buffer = new Windows.Storage.Streams.Buffer((uint)stream.Size);
+                        await stream.ReadAsync(buffer, buffer.Capacity, InputStreamOptions.None);
+                        
+                        using var reader = DataReader.FromBuffer(buffer);
+                        byte[] fileBytes = new byte[buffer.Length];
+                        reader.ReadBytes(fileBytes);
+                        
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            try
+                            {
+                                var ms = new MemoryStream(fileBytes);
+                                var image = new BitmapImage();
+                                image.BeginInit();
+                                image.CacheOption = BitmapCacheOption.OnLoad;
+                                image.StreamSource = ms;
+                                image.EndInit();
+                                image.Freeze();
+                                albumArt = image;
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"Failed to decode album art bitmap: {ex.Message}");
+                            }
+                        });
+                    }
+                }
+                catch (Exception thumbEx)
+                {
+                    Debug.WriteLine($"Thumbnail error: {thumbEx.Message}");
+                }
             }
 
             App.Current.Dispatcher.Invoke(() =>
@@ -119,6 +137,7 @@ public class MediaController
         }
         catch (Exception ex)
         {
+            try { System.IO.File.AppendAllText(@"C:\projects\pomme-bar\app.log", $"[{DateTime.Now}] Error getting media properties: {ex}\n"); } catch { }
             Debug.WriteLine($"Error getting media properties: {ex.Message}");
         }
     }

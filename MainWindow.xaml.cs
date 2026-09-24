@@ -5,14 +5,14 @@ using Wpf.Ui.Controls;
 
 namespace PommeBar;
 
-public partial class MainWindow : FluentWindow
+public partial class MainWindow : Window
 {
     private readonly MediaController _mediaController;
+    private static readonly string ConfigPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "position.cfg");
 
     public MainWindow()
     {
         InitializeComponent();
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
         _mediaController = new MediaController();
         _mediaController.OnMediaChanged += MediaController_OnMediaChanged;
@@ -20,21 +20,68 @@ public partial class MainWindow : FluentWindow
         
         this.Loaded += async (s, e) =>
         {
-            // Position above the Windows taskbar at bottom right
-            var workArea = SystemParameters.WorkArea;
-            this.Left = workArea.Right - this.ActualWidth - 20;
-            this.Top = workArea.Bottom - this.ActualHeight - 12;
-
-            // Automatically enable Windows startup by default if not already set
-            if (!StartupManager.IsStartupEnabled())
+            try
             {
-                StartupManager.SetStartup(true);
-            }
-            MenuStartup.IsChecked = StartupManager.IsStartupEnabled();
+                string savedPos = "right";
+                if (System.IO.File.Exists(ConfigPath))
+                {
+                    savedPos = System.IO.File.ReadAllText(ConfigPath).Trim().ToLower();
+                }
+                else
+                {
+                    // Prompt user on first run where to position on taskbar
+                    var dlg = new PositionDialog();
+                    dlg.ShowDialog();
+                    savedPos = dlg.SelectedPosition;
+                }
+                ApplyPosition(savedPos);
 
-            await _mediaController.InitializeAsync();
+                MenuStartup.IsChecked = StartupManager.IsStartupEnabled();
+                await _mediaController.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR in Loaded: {ex}");
+            }
         };
     }
+
+    private void ApplyPosition(string position)
+    {
+        var workArea = SystemParameters.WorkArea;
+        double w = this.ActualWidth > 0 ? this.ActualWidth : 430;
+        double h = this.ActualHeight > 0 ? this.ActualHeight : 70;
+
+        switch (position)
+        {
+            case "left":
+                this.Left = workArea.Left + 20;
+                break;
+            case "center":
+                this.Left = (workArea.Width - w) / 2;
+                break;
+            case "right":
+            default:
+                this.Left = workArea.Right - w - 20;
+                break;
+        }
+        this.Top = workArea.Bottom - h - 10;
+
+        try { System.IO.File.WriteAllText(ConfigPath, position); } catch { }
+    }
+
+    private void MenuChoosePos_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new PositionDialog();
+        if (dlg.ShowDialog() == true)
+        {
+            ApplyPosition(dlg.SelectedPosition);
+        }
+    }
+
+    private void MenuPosRight_Click(object sender, RoutedEventArgs e) => ApplyPosition("right");
+    private void MenuPosCenter_Click(object sender, RoutedEventArgs e) => ApplyPosition("center");
+    private void MenuPosLeft_Click(object sender, RoutedEventArgs e) => ApplyPosition("left");
 
     private void MenuStartup_Click(object sender, RoutedEventArgs e)
     {
@@ -66,27 +113,43 @@ public partial class MainWindow : FluentWindow
 
     private void MediaController_OnMediaChanged(string title, string artist, BitmapImage? albumArt)
     {
-        SongTitleText.Text = title;
-        ArtistNameText.Text = artist;
+        try
+        {
+            SongTitleText.Text = title;
+            ArtistNameText.Text = artist;
 
-        if (albumArt != null)
-        {
-            AlbumArtImage.Source = albumArt;
-            AlbumArtImage.Visibility = Visibility.Visible;
+            if (albumArt != null)
+            {
+                AlbumArtImage.Source = albumArt;
+                AlbumArtImage.Visibility = Visibility.Visible;
+                AlbumArtPlaceholder.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                AlbumArtImage.Source = null;
+                AlbumArtImage.Visibility = Visibility.Collapsed;
+                AlbumArtPlaceholder.Visibility = Visibility.Visible;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            AlbumArtImage.Source = null;
-            AlbumArtImage.Visibility = Visibility.Collapsed;
+            System.Diagnostics.Debug.WriteLine($"OnMediaChanged ERROR: {ex}");
         }
     }
 
     private void MediaController_OnPlaybackStateChanged(bool isPlaying)
     {
-        BtnPlayPause.Icon = new Wpf.Ui.Controls.SymbolIcon
+        try
         {
-            Symbol = isPlaying ? Wpf.Ui.Controls.SymbolRegular.Pause24 : Wpf.Ui.Controls.SymbolRegular.Play24
-        };
+            BtnPlayPause.Icon = new Wpf.Ui.Controls.SymbolIcon
+            {
+                Symbol = isPlaying ? Wpf.Ui.Controls.SymbolRegular.Pause24 : Wpf.Ui.Controls.SymbolRegular.Play24
+            };
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"OnPlaybackStateChanged ERROR: {ex}");
+        }
     }
 
     private async void BtnPrevious_Click(object sender, RoutedEventArgs e)
@@ -123,5 +186,39 @@ public partial class MainWindow : FluentWindow
         {
             this.DragMove();
         }
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
+    private void SongInfo_Click(object sender, MouseButtonEventArgs e)
+    {
+        try
+        {
+            var proc = System.Diagnostics.Process.GetProcessesByName("AppleMusic").FirstOrDefault();
+            if (proc != null && proc.MainWindowHandle != IntPtr.Zero)
+            {
+                ShowWindow(proc.MainWindowHandle, 9); // SW_RESTORE
+                SetForegroundWindow(proc.MainWindowHandle);
+            }
+        }
+        catch { }
+    }
+
+    private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        const byte VK_VOLUME_UP = 0xAF;
+        const byte VK_VOLUME_DOWN = 0xAE;
+        const uint KEYEVENTF_KEYUP = 0x0002;
+
+        byte key = e.Delta > 0 ? VK_VOLUME_UP : VK_VOLUME_DOWN;
+        keybd_event(key, 0, 0, 0);
+        keybd_event(key, 0, KEYEVENTF_KEYUP, 0);
     }
 }

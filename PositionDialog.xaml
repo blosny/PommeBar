@@ -1,0 +1,32 @@
+<Window x:Class="PommeBar.PositionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="PommeBar Konum Seçimi" Height="220" Width="440"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True">
+    <Border CornerRadius="16" Background="#F01C1C1E" BorderBrush="#40FFFFFF" BorderThickness="1" Margin="8">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="3" Direction="270" Opacity="0.5" Color="Black" />
+        </Border.Effect>
+        <Grid Margin="18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="🍎 PommeBar Konumlandırma" FontWeight="Bold" FontSize="16" Foreground="White" HorizontalAlignment="Center" />
+            <TextBlock Grid.Row="1" Text="Widget'ı görev çubuğunda nerede görmek istersiniz?" FontSize="13" Foreground="#B0FFFFFF" HorizontalAlignment="Center" Margin="0,6,0,14" />
+
+            <UniformGrid Grid.Row="2" Columns="3" Margin="0,2,0,0">
+                <ui:Button x:Name="BtnLeft" Content="⬅️ Sol (Başlat)" Margin="4" Padding="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Cursor="Hand" Click="BtnLeft_Click" />
+                <ui:Button x:Name="BtnCenter" Content="⏺️ Orta (İkonlar)" Margin="4" Padding="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Cursor="Hand" Click="BtnCenter_Click" />
+                <ui:Button x:Name="BtnRight" Content="➡️ Sağ (Saat)" Margin="4" Padding="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Cursor="Hand" Click="BtnRight_Click" />
+            </UniformGrid>
+        </Grid>
+    </Border>
+</Window>
