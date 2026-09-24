@@ -20,7 +20,18 @@ public partial class MainWindow : FluentWindow
         
         this.Loaded += async (s, e) =>
         {
+            // Position above the Windows taskbar at bottom right
+            var workArea = SystemParameters.WorkArea;
+            this.Left = workArea.Right - this.ActualWidth - 20;
+            this.Top = workArea.Bottom - this.ActualHeight - 12;
+
+            // Automatically enable Windows startup by default if not already set
+            if (!StartupManager.IsStartupEnabled())
+            {
+                StartupManager.SetStartup(true);
+            }
             MenuStartup.IsChecked = StartupManager.IsStartupEnabled();
+
             await _mediaController.InitializeAsync();
         };
     }

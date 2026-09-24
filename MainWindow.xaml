@@ -10,7 +10,8 @@
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
         WindowCornerPreference="Round"
-        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        ShowInTaskbar="False"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
     
     <ui:FluentWindow.ContextMenu>
