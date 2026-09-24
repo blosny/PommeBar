@@ -15,6 +15,14 @@
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         MouseWheel="Window_MouseWheel">
     
+    <Window.Resources>
+        <!-- Apple Music Red accent colors for sliders & checkmarks -->
+        <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#FF3B30" />
+        <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#E03026" />
+        <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#C0251C" />
+        <SolidColorBrush x:Key="ControlStrongFillColorDefaultBrush" Color="#FF3B30" />
+    </Window.Resources>
+
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem x:Name="MenuLockPos" Header="📌 Konumu Kilitle" IsCheckable="True" Click="MenuLockPos_Click" />
@@ -37,87 +45,10 @@
         </Border.Effect>
 
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="58" />
-            </Grid.RowDefinitions>
-
-            <!-- Expanded Flyout Panel -->
-            <Grid x:Name="ExpandedPanel" Grid.Row="0" Visibility="Collapsed" Margin="14,14,14,6">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <!-- Header: Larger Art + Metadata + Quick Action Buttons -->
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Width="52" Height="52" CornerRadius="10" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
-                        <Grid>
-                            <ui:SymbolIcon x:Name="ExpandedArtPlaceholder" Symbol="MusicNote224" FontSize="24" Foreground="#66FFFFFF" />
-                            <Image x:Name="ExpandedArtImage" Stretch="UniformToFill" Visibility="Collapsed">
-                                <Image.Clip>
-                                    <RectangleGeometry Rect="0,0,52,52" RadiusX="10" RadiusY="10"/>
-                                </Image.Clip>
-                            </Image>
-                        </Grid>
-                    </Border>
-
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
-                        <TextBlock x:Name="ExpandedTitleText" Text="Müzik Bekleniyor..." FontWeight="Bold" FontSize="14" Foreground="White" TextTrimming="CharacterEllipsis" />
-                        <TextBlock x:Name="ExpandedArtistText" Text="PommeBar" FontSize="12" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
-                        <TextBlock Text="Apple Music • Windows" FontSize="11" Foreground="#66FFFFFF" Margin="0,2,0,0" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
-                        <ui:Button x:Name="BtnLock" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen24}" Padding="6" Margin="0,0,4,0" ToolTip="Konumu Kilitle / Kilidi Aç" Cursor="Hand" Click="BtnLock_Click" />
-                        <ui:Button x:Name="BtnReposition" Appearance="Transparent" Icon="{ui:SymbolIcon Location24}" Padding="6" ToolTip="Konumu Değiştir" Cursor="Hand" Click="MenuChoosePos_Click" />
-                    </StackPanel>
-                </Grid>
-
-                <!-- Timeline Scrubber -->
-                <Grid Grid.Row="1" Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock x:Name="TimeCurrentText" Text="0:00" FontSize="11" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="0,0,8,0" Width="32" TextAlignment="Right" />
-                    <Slider Grid.Column="1" x:Name="TimelineSlider" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center" Cursor="Hand" PreviewMouseDown="TimelineSlider_PreviewMouseDown" PreviewMouseUp="TimelineSlider_PreviewMouseUp" />
-                    <TextBlock Grid.Column="2" x:Name="TimeTotalText" Text="0:00" FontSize="11" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="8,0,0,0" Width="32" />
-                </Grid>
-
-                <!-- Volume and Options -->
-                <Grid Grid.Row="2" Margin="0,2,0,4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="130" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <ui:SymbolIcon Symbol="Speaker224" FontSize="16" Foreground="#AAFFFFFF" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <Slider Grid.Column="1" x:Name="VolumeSlider" Minimum="0" Maximum="100" Value="50" VerticalAlignment="Center" Cursor="Hand" ValueChanged="VolumeSlider_ValueChanged" />
-                    <TextBlock Grid.Column="2" x:Name="VolumeLabel" Text="50%" FontSize="11" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="6,0,0,0" Width="34" />
-
-                    <CheckBox Grid.Column="4" x:Name="ChkStartup" Content="Windows ile Başlat" Foreground="#CCFFFFFF" FontSize="11" VerticalAlignment="Center" Click="ChkStartup_Click" />
-                </Grid>
-
-                <!-- Separator Line -->
-                <Rectangle Grid.Row="3" Height="1" Fill="#20FFFFFF" Margin="0,10,0,0" />
-            </Grid>
-
-            <!-- Compact Bar Area -->
-            <Grid Grid.Row="1" Margin="12,0">
+            <!-- ============================================== -->
+            <!-- 1. COMPACT BAR VIEW (Normal Taskbar Widget)    -->
+            <!-- ============================================== -->
+            <Grid x:Name="CompactBar" Height="58" Margin="12,0" Visibility="Visible">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -142,7 +73,7 @@
                     <TextBlock x:Name="ArtistNameText" Text="PommeBar" FontSize="12" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
                 </StackPanel>
 
-                <!-- Controls -->
+                <!-- Compact Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button x:Name="BtnPrevious" Appearance="Transparent" Icon="{ui:SymbolIcon Previous24}" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnPrevious_Click" />
                     <ui:Button x:Name="BtnPlayPause" Appearance="Transparent" Icon="{ui:SymbolIcon Play24}" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnPlayPause_Click" />
@@ -154,6 +85,105 @@
 
                 <!-- Sleek Track Progress Line -->
                 <ProgressBar Grid.ColumnSpan="3" x:Name="TrackProgressBar" Minimum="0" Maximum="100" Value="0" Height="2" VerticalAlignment="Bottom" Background="Transparent" Foreground="#FF3B30" BorderThickness="0" Margin="2,0,2,2" />
+            </Grid>
+
+            <!-- ============================================== -->
+            <!-- 2. EXPANDED FLYOUT VIEW (Unified Media Player) -->
+            <!-- ============================================== -->
+            <Grid x:Name="ExpandedView" Visibility="Collapsed" Margin="14,10,14,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /> <!-- Header: Badge + Window Actions -->
+                    <RowDefinition Height="Auto" /> <!-- Track Info: Large Art + Metadata -->
+                    <RowDefinition Height="Auto" /> <!-- Timeline Scrubber -->
+                    <RowDefinition Height="Auto" /> <!-- Centered Playback Controls -->
+                    <RowDefinition Height="Auto" /> <!-- Volume & Startup Footer -->
+                </Grid.RowDefinitions>
+
+                <!-- Header Row -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="MusicNote224" FontSize="13" Foreground="#FF3B30" Margin="0,0,6,0" />
+                        <TextBlock Text="Apple Music" FontSize="12" FontWeight="SemiBold" Foreground="#CCFFFFFF" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:Button x:Name="BtnLockExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen24}" Padding="5" Margin="0,0,2,0" ToolTip="Konumu Kilitle / Kilidi Aç" Cursor="Hand" Click="BtnLock_Click" />
+                        <ui:Button x:Name="BtnRepositionExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon Location24}" Padding="5" Margin="0,0,2,0" ToolTip="Konumu Değiştir" Cursor="Hand" Click="MenuChoosePos_Click" />
+                        <ui:Button x:Name="BtnCollapse" Appearance="Transparent" Icon="{ui:SymbolIcon ChevronDown24}" Padding="5" ToolTip="Daralt" Cursor="Hand" Click="BtnExpand_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Track Info Row: Big Art + Title + Artist -->
+                <Grid Grid.Row="1" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Large Art -->
+                    <Border Width="60" Height="60" CornerRadius="10" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Direction="270" Opacity="0.3" Color="Black" />
+                        </Border.Effect>
+                        <Grid>
+                            <ui:SymbolIcon x:Name="ExpandedArtPlaceholder" Symbol="MusicNote224" FontSize="26" Foreground="#66FFFFFF" />
+                            <Image x:Name="ExpandedArtImage" Stretch="UniformToFill" Visibility="Collapsed">
+                                <Image.Clip>
+                                    <RectangleGeometry Rect="0,0,60,60" RadiusX="10" RadiusY="10"/>
+                                </Image.Clip>
+                            </Image>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
+                        <TextBlock x:Name="ExpandedTitleText" Text="Müzik Bekleniyor..." FontWeight="Bold" FontSize="15" Foreground="White" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ExpandedArtistText" Text="PommeBar" FontSize="13" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                        <TextBlock x:Name="ExpandedAlbumText" Text="Windows 11 Companion" FontSize="11" Foreground="#66FFFFFF" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Timeline Scrubber -->
+                <Grid Grid.Row="2" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="TimeCurrentText" Text="0:00" FontSize="11" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="0,0,8,0" Width="32" TextAlignment="Right" />
+                    <Slider Grid.Column="1" x:Name="TimelineSlider" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center" Cursor="Hand" PreviewMouseDown="TimelineSlider_PreviewMouseDown" PreviewMouseUp="TimelineSlider_PreviewMouseUp" />
+                    <TextBlock Grid.Column="2" x:Name="TimeTotalText" Text="0:00" FontSize="11" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="8,0,0,0" Width="32" />
+                </Grid>
+
+                <!-- Centered Playback Controls -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,8">
+                    <ui:Button x:Name="BtnPrevExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon Previous24}" Padding="8" Margin="0,0,12,0" Cursor="Hand" Click="BtnPrevious_Click" />
+                    <ui:Button x:Name="BtnPlayPauseExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon Play24}" Padding="10" Margin="0,0,12,0" Cursor="Hand" Click="BtnPlayPause_Click" />
+                    <ui:Button x:Name="BtnNextExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon Next24}" Padding="8" Margin="0,0,12,0" Cursor="Hand" Click="BtnNext_Click" />
+                    <ui:Button x:Name="BtnHeartExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}" Foreground="#FF3B30" Padding="8" Cursor="Hand" Click="BtnHeart_Click" />
+                </StackPanel>
+
+                <!-- Footer: Volume and Startup Toggle -->
+                <Grid Grid.Row="4" Margin="0,2,0,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="130" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:SymbolIcon Symbol="Speaker224" FontSize="15" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <Slider Grid.Column="1" x:Name="VolumeSlider" Minimum="0" Maximum="100" Value="50" VerticalAlignment="Center" Cursor="Hand" ValueChanged="VolumeSlider_ValueChanged" />
+                    <TextBlock Grid.Column="2" x:Name="VolumeLabel" Text="50%" FontSize="11" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="6,0,0,0" Width="34" />
+
+                    <CheckBox Grid.Column="4" x:Name="ChkStartup" Content="Windows ile Başlat" Foreground="#CCFFFFFF" FontSize="11" VerticalAlignment="Center" Click="ChkStartup_Click" />
+                </Grid>
             </Grid>
         </Grid>
     </Border>

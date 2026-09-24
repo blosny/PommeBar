@@ -22,7 +22,7 @@ public partial class MainWindow : Window
     private bool _isLocked = false;
     private bool _isExpanded = false;
     private bool _isUserSeeking = false;
-    private string _currentPositionMode = "right";
+    private string _currentPositionMode = "left";
 
     public MainWindow()
     {
@@ -183,8 +183,14 @@ public partial class MainWindow : Window
         var symbol = locked ? SymbolRegular.LockClosed24 : SymbolRegular.LockOpen24;
         string tip = locked ? "Konum Kilitli (Sabit)" : "Konum Kilidi Açık (Taşınabilir)";
 
-        BtnLock.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = symbol };
-        BtnLock.ToolTip = tip;
+        if (BtnLockExpanded != null)
+        {
+            BtnLockExpanded.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = symbol };
+            BtnLockExpanded.ToolTip = tip;
+            BtnLockExpanded.Foreground = locked 
+                ? new SolidColorBrush(Color.FromRgb(255, 59, 48)) 
+                : new SolidColorBrush(Color.FromArgb(180, 255, 255, 255));
+        }
 
         if (BtnLockCompact != null)
         {
@@ -215,9 +221,9 @@ public partial class MainWindow : Window
     {
         _isExpanded = !_isExpanded;
         var workArea = SystemParameters.WorkArea;
-        double targetHeight = _isExpanded ? 225 : 70;
+        double targetHeight = _isExpanded ? 245 : 70;
 
-        // Keep the bottom edge anchored above the taskbar
+        // Keep the bottom edge firmly anchored above the taskbar
         double currentBottom = this.Top + (this.ActualHeight > 0 ? this.ActualHeight : this.Height);
         if (currentBottom > workArea.Bottom - 5 || currentBottom < workArea.Top + 100)
         {
@@ -226,18 +232,14 @@ public partial class MainWindow : Window
 
         if (_isExpanded)
         {
-            ExpandedPanel.Visibility = Visibility.Visible;
-            TrackProgressBar.Visibility = Visibility.Collapsed;
-            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = SymbolRegular.ChevronDown24 };
-            BtnExpand.ToolTip = "Daralt";
+            CompactBar.Visibility = Visibility.Collapsed;
+            ExpandedView.Visibility = Visibility.Visible;
             SyncVolumeUI();
         }
         else
         {
-            ExpandedPanel.Visibility = Visibility.Collapsed;
-            TrackProgressBar.Visibility = Visibility.Visible;
-            BtnExpand.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = SymbolRegular.ChevronUp24 };
-            BtnExpand.ToolTip = "Genişletilmiş Görünüm";
+            ExpandedView.Visibility = Visibility.Collapsed;
+            CompactBar.Visibility = Visibility.Visible;
         }
 
         this.Height = targetHeight;
@@ -339,10 +341,13 @@ public partial class MainWindow : Window
         try
         {
             _isPlaying = isPlaying;
-            BtnPlayPause.Icon = new Wpf.Ui.Controls.SymbolIcon
+            var symbol = isPlaying ? SymbolRegular.Pause24 : SymbolRegular.Play24;
+
+            BtnPlayPause.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = symbol };
+            if (BtnPlayPauseExpanded != null)
             {
-                Symbol = isPlaying ? SymbolRegular.Pause24 : SymbolRegular.Play24
-            };
+                BtnPlayPauseExpanded.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = symbol };
+            }
         }
         catch (Exception ex)
         {
@@ -426,6 +431,7 @@ public partial class MainWindow : Window
     private async void BtnHeart_Click(object sender, RoutedEventArgs e)
     {
         BtnHeart.IsEnabled = false;
+        if (BtnHeartExpanded != null) BtnHeartExpanded.IsEnabled = false;
         try
         {
             await AppleMusicAutomation.ToggleFavoriteAsync();
@@ -433,6 +439,7 @@ public partial class MainWindow : Window
         finally
         {
             BtnHeart.IsEnabled = true;
+            if (BtnHeartExpanded != null) BtnHeartExpanded.IsEnabled = true;
         }
     }
 

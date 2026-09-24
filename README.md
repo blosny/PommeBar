@@ -6,6 +6,10 @@ Built with .NET 8 and WPF, PommeBar floats seamlessly above the Windows taskbar,
 
 ![PommeBar on Windows 11 Taskbar](docs/screenshot.png)
 
+<p align="center">
+  <img src="docs/screenshot_flyout.png" alt="PommeBar Expandable Flyout View" width="550" />
+</p>
+
 ---
 
 ## Features
