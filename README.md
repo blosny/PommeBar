@@ -5,7 +5,9 @@ A modern, lightweight Windows 11 taskbar companion and mini-player for **Apple M
 Built with .NET 8 and WPF, PommeBar brings instant playback controls, album art, interactive timeline scrubbing, master volume control, and native favorite/like integration right to your taskbar.
 
 <p align="center">
-  <img src="docs/screenshot_flyout.png" alt="PommeBar Windows 11 Player" width="580" />
+  <img src="docs/preview_compact.png" alt="PommeBar Compact Bar" width="560" />
+  <br/><br/>
+  <img src="docs/preview_expanded.png" alt="PommeBar Expanded Flyout" width="560" />
 </p>
 
 ---
