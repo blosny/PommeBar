@@ -65,7 +65,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Compact Album Art -->
-                <Border x:Name="CompactArtBorder" Width="42" Height="42" CornerRadius="8" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
+                <Border x:Name="CompactArtBorder" Width="42" Height="42" CornerRadius="8" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" ToolTip="Uygulamayı Aç (Apple Music / Spotify)" MouseLeftButtonDown="SongInfo_Click">
                     <Grid>
                         <ui:SymbolIcon x:Name="AlbumArtPlaceholder" Symbol="MusicNote224" FontSize="20" Foreground="#66FFFFFF" />
                         <Image x:Name="AlbumArtImage" Stretch="UniformToFill" Visibility="Collapsed">
@@ -77,7 +77,7 @@
                 </Border>
 
                 <!-- Compact Song Info -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
                     <TextBlock x:Name="SongTitleText" Text="Müzik Bekleniyor..." FontWeight="SemiBold" FontSize="14" Foreground="White" TextTrimming="CharacterEllipsis" />
                     <TextBlock x:Name="ArtistNameText" Text="PommeBar" FontSize="12" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
                 </StackPanel>
@@ -135,7 +135,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Large Art -->
-                    <Border Width="60" Height="60" CornerRadius="10" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
+                    <Border Width="60" Height="60" CornerRadius="10" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" ToolTip="Uygulamayı Aç (Apple Music / Spotify)" MouseLeftButtonDown="SongInfo_Click">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="10" ShadowDepth="1" Direction="270" Opacity="0.3" Color="Black" />
                         </Border.Effect>
@@ -149,7 +149,7 @@
                         </Grid>
                     </Border>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0">
                         <TextBlock x:Name="ExpandedTitleText" Text="Müzik Bekleniyor..." FontWeight="Bold" FontSize="15" Foreground="White" TextTrimming="CharacterEllipsis" />
                         <TextBlock x:Name="ExpandedArtistText" Text="PommeBar" FontSize="13" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
                         <TextBlock x:Name="ExpandedAlbumText" Text="Windows 11 Companion" FontSize="11" Foreground="#66FFFFFF" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />

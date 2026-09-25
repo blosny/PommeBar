@@ -680,21 +680,25 @@ public partial class MainWindow : Window
 
     private async void BtnPrevious_Click(object sender, RoutedEventArgs e)
     {
+        e.Handled = true;
         await _mediaController.SkipPreviousAsync();
     }
 
     private async void BtnPlayPause_Click(object sender, RoutedEventArgs e)
     {
+        e.Handled = true;
         await _mediaController.TogglePlayPauseAsync();
     }
 
     private async void BtnNext_Click(object sender, RoutedEventArgs e)
     {
+        e.Handled = true;
         await _mediaController.SkipNextAsync();
     }
 
     private async void BtnHeart_Click(object sender, RoutedEventArgs e)
     {
+        e.Handled = true;
         BtnHeart.IsEnabled = false;
         if (BtnHeartExpanded != null) BtnHeartExpanded.IsEnabled = false;
         try
@@ -730,6 +734,7 @@ public partial class MainWindow : Window
 
     private void SongInfo_Click(object sender, MouseButtonEventArgs e)
     {
+        e.Handled = true;
         try
         {
             string procName = _currentAppType == MediaAppType.Spotify ? "Spotify" : "AppleMusic";

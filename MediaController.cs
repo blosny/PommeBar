@@ -319,7 +319,33 @@ public class MediaController
     public async Task TogglePlayPauseAsync()
     {
         if (_currentSession != null)
-            await _currentSession.TryTogglePlayPauseAsync();
+        {
+            try
+            {
+                var info = _currentSession.GetPlaybackInfo();
+                if (info != null)
+                {
+                    if (info.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                    {
+                        var ok = await _currentSession.TryPauseAsync();
+                        if (!ok) await _currentSession.TryTogglePlayPauseAsync();
+                    }
+                    else
+                    {
+                        var ok = await _currentSession.TryPlayAsync();
+                        if (!ok) await _currentSession.TryTogglePlayPauseAsync();
+                    }
+                }
+                else
+                {
+                    await _currentSession.TryTogglePlayPauseAsync();
+                }
+            }
+            catch
+            {
+                await _currentSession.TryTogglePlayPauseAsync();
+            }
+        }
     }
 
     public async Task SkipNextAsync()
