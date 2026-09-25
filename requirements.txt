@@ -1,0 +1,25 @@
+# ==============================================================================
+# PommeBar - Dependencies & Requirements
+# ==============================================================================
+# PommeBar is a .NET 8 / WPF desktop application for Windows.
+# In the .NET ecosystem, NuGet is used instead of pip.
+#
+# To install/restore all project dependencies with one command, run:
+#
+#     dotnet restore
+#
+# Or run 'install_dependencies.bat' on Windows.
+# ==============================================================================
+
+# Core Framework & SDK:
+# - .NET 8.0 SDK or newer (net8.0-windows10.0.19041.0)
+#   Download: https://dotnet.microsoft.com/download/dotnet/8.0
+
+# NuGet Package Dependencies (defined in PommeBar.csproj):
+Wpf.Ui >= 4.3.0
+
+# Native Windows APIs & References (included in Windows 10/11 SDK):
+# - Microsoft.Windows.SDK.NET.Ref (10.0.19041.38+)
+# - Windows.Media.Control (GlobalSystemMediaTransportControlsSessionManager)
+# - Windows.UI.Core / UIAutomationClient (for Apple Music & Spotify integration)
+# - CoreAudio (IMMDeviceEnumerator / IAudioEndpointVolume COM interface)
