@@ -1,8 +1,8 @@
 # PommeBar
 
-A modern, lightweight Windows 11 taskbar mini-player and companion widget for **Apple Music**.
+A modern, lightweight Windows 11 taskbar companion and mini-player for **Apple Music** and **Spotify**.
 
-Built with .NET 8 and WPF, PommeBar floats seamlessly above the Windows taskbar, providing instant playback controls, album art, interactive timeline, volume adjustment, and native Apple Music favorite integration without interrupting your workflow.
+Built with .NET 8 and WPF, PommeBar brings instant playback controls, album art, interactive timeline scrubbing, master volume control, and native favorite/like integration right to your taskbar.
 
 <p align="center">
   <img src="docs/screenshot_flyout.png" alt="PommeBar Windows 11 Player" width="580" />
@@ -12,14 +12,20 @@ Built with .NET 8 and WPF, PommeBar floats seamlessly above the Windows taskbar,
 
 ## Features
 
-- **Seamless Taskbar Integration**: Docks comfortably above the Windows 11 taskbar. Choose Left (Start menu), Center (Taskbar icons), or Right (System tray / clock), or position it anywhere on your desktop.
-- **Position Locking**: Lock widget position to prevent accidental dragging during playback or clicks.
-- **Expandable Flyout**: Expand upwards to reveal a larger artwork display, full timeline scrubber with timestamps, volume slider, and quick configuration switches.
-- **Apple Music Favorite/Like Integration**: Dedicated heart button interacts directly with the Apple Music for Windows desktop application to toggle favorites via UI Automation.
-- **System Media Transport Controls (SMTC)**: Real-time track metadata (Song Title, Artist, Album Art, Duration) synchronized directly with Windows media sessions.
-- **Smooth Volume Control**: Adjust master volume directly using your mouse wheel over the widget or via the expanded flyout slider powered by Windows CoreAudio.
-- **Windows Startup**: Run automatically on system boot via a built-in startup manager.
-- **Fluent 2 Dark Theme**: Clean, borderless design with rounded corners, subtle acrylic backgrounds, and elevation shadows matching the native Windows 11 aesthetics.
+- **Apple Music & Spotify Dual Support**: Automatically detects active playback and switches branding, metadata, album art, and accent colors in real-time (Apple Red `#FF3B30` or Spotify Green `#1DB954`).
+- **Dual Display Modes**:
+  - 🏝️ **Floating Island Mode**: Floats gracefully 10px above the taskbar with smooth 16px rounded acrylic corners.
+  - 📌 **Embedded Taskbar Mode**: Sits directly on the taskbar surface with zero gap, designed to look like a native Windows 11 taskbar widget.
+- **3-Stage Smart Locking**:
+  - 🔓 **Free**: Freely draggable anywhere across the screen.
+  - 🔒 **Taskbar Locked**: Fixed in place on the taskbar to prevent accidental dragging.
+  - 📌 **Super Locked (Game & Overlay Mode)**: Enforces `HWND_TOPMOST` z-order priority so full-screen borderless games and applications never cover the widget.
+- **Native Favorite / Like Integration**: Dedicated heart button toggles favorites directly inside Apple Music (via UI Automation) or Spotify (via automation & shortcut).
+- **Expandable Flyout**: Expands upwards with smooth 60fps slide & fade animations to reveal large album art, interactive timeline scrubber, and volume slider.
+- **System Tray Integration**: Native tray icon beside the clock. Left-click to show/hide the widget, right-click for the full context menu.
+- **System Media Transport Controls (SMTC)**: Synchronized with Windows media sessions for real-time track metadata and timeline progress.
+- **Smooth Volume Control**: Mouse wheel over the widget or use the flyout volume slider powered by Windows CoreAudio.
+- **Windows Startup**: Optional silent startup on system boot via Windows Registry.
 
 ---
 
@@ -31,12 +37,11 @@ Built with .NET 8 and WPF, PommeBar floats seamlessly above the Windows taskbar,
 3. Extract the folder to a permanent location (e.g., `C:\Program Files\PommeBar` or `C:\Tools\PommeBar`).
 4. Run `PommeBar.exe`.
 
-### 2. First Run
-- On initial launch, PommeBar prompts you to select your preferred taskbar dock position:
-  - **Left**: Placed near the Start button.
-  - **Center**: Placed next to centered taskbar app icons.
-  - **Right**: Placed above the system tray and clock.
-- Make sure Apple Music for Windows is running and playing audio. PommeBar will immediately sync metadata and album artwork.
+### 2. First Run & Configuration
+- On initial launch, select your preferred appearance and position:
+  - **Mode**: Floating Island or Embedded Taskbar.
+  - **Position**: Left (Start menu), Center (Taskbar icons), or Right (System tray).
+- Start playing music in Apple Music or Spotify, and PommeBar will immediately sync.
 
 ---
 
@@ -46,14 +51,14 @@ Built with .NET 8 and WPF, PommeBar floats seamlessly above the Windows taskbar,
 | :--- | :--- |
 | **Play / Pause** | Play/Pause icon button |
 | **Next / Previous Track** | Next / Previous icon buttons |
-| **Favorite Track (Apple Music)** | Heart icon button |
+| **Favorite Track (Apple Music / Spotify)** | Heart icon button |
 | **Expand / Collapse Flyout** | Chevron Up / Down button |
 | **Adjust Volume** | Mouse scroll wheel anywhere on the widget, or slider in expanded view |
-| **Bring Apple Music to Front** | Click the song title or album artwork |
-| **Move Widget** | Left-click and drag (when position lock is disabled) |
-| **Lock / Unlock Position** | Lock icon in flyout or right-click context menu |
-| **Change Dock Position** | Location icon in flyout or right-click context menu |
-| **Context Menu** | Right-click the widget for settings, startup toggle, and exit |
+| **Bring Active Music App to Front** | Click the song title or album artwork |
+| **Cycle Lock Mode** | Lock button on widget (Cycles: Free ➔ Locked ➔ Super Locked) |
+| **Switch Display Mode** | Right-click ➔ Görünüm Modu (Ada Modu / Görev Çubuğuna Entegre) |
+| **Toggle Show / Hide** | Left-click system tray icon near the clock |
+| **Context Menu** | Right-click the widget or tray icon for settings, dock mode, startup, and exit |
 
 ---
 

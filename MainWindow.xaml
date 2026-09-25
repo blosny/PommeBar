@@ -11,12 +11,12 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        ShowInTaskbar="True"
+        ShowInTaskbar="False"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         MouseWheel="Window_MouseWheel">
     
     <Window.Resources>
-        <!-- Apple Music Red accent colors for sliders & checkmarks -->
+        <!-- Apple Music Red / Spotify Green accent colors -->
         <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#FF3B30" />
         <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#E03026" />
         <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#C0251C" />
@@ -25,8 +25,17 @@
 
     <Window.ContextMenu>
         <ContextMenu>
-            <MenuItem x:Name="MenuLockPos" Header="📌 Konumu Kilitle" IsCheckable="True" Click="MenuLockPos_Click" />
-            <MenuItem Header="📍 Konumu Ayarla..." Click="MenuChoosePos_Click" />
+            <MenuItem Header="🔒 Kilit Modu">
+                <MenuItem x:Name="MenuLockFree" Header="🔓 Serbest (Taşınabilir)" Click="MenuLockFree_Click" />
+                <MenuItem x:Name="MenuLockFixed" Header="🔒 Sabit (Görev Çubuğu Kilidi)" Click="MenuLockFixed_Click" />
+                <MenuItem x:Name="MenuLockSuper" Header="📌 Süper Kilit (Oyun &amp; En Üst Katman)" Click="MenuLockSuper_Click" />
+            </MenuItem>
+            <MenuItem Header="🎨 Görünüm Modu">
+                <MenuItem x:Name="MenuModeFloating" Header="🏝️ Ada Modu (Görev Çubuğu Üstü)" Click="MenuModeFloating_Click" />
+                <MenuItem x:Name="MenuModeEmbedded" Header="📌 Görev Çubuğuna Entegre (Sıfır Boşluk)" Click="MenuModeEmbedded_Click" />
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="📍 Görünüm &amp; Konum Ayarla..." Click="MenuChoosePos_Click" />
             <MenuItem Header="Hızlı Konum">
                 <MenuItem Header="Sağ (Saat Yanı)" Click="MenuPosRight_Click" />
                 <MenuItem Header="Orta (İkonlar Yanı)" Click="MenuPosCenter_Click" />
@@ -39,9 +48,9 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <Border CornerRadius="16" Background="#EB1C1C1E" BorderBrush="#35FFFFFF" BorderThickness="1" Margin="6">
+    <Border x:Name="RootBorder" CornerRadius="16" Background="#EB1C1C1E" BorderBrush="#35FFFFFF" BorderThickness="1" Margin="6">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.45" Color="Black" />
+            <DropShadowEffect x:Name="RootShadow" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.45" Color="Black" />
         </Border.Effect>
 
         <Grid>
@@ -56,7 +65,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Compact Album Art -->
-                <Border Width="42" Height="42" CornerRadius="8" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
+                <Border x:Name="CompactArtBorder" Width="42" Height="42" CornerRadius="8" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="SongInfo_Click">
                     <Grid>
                         <ui:SymbolIcon x:Name="AlbumArtPlaceholder" Symbol="MusicNote224" FontSize="20" Foreground="#66FFFFFF" />
                         <Image x:Name="AlbumArtImage" Stretch="UniformToFill" Visibility="Collapsed">
@@ -79,7 +88,7 @@
                     <ui:Button x:Name="BtnPlayPause" Appearance="Transparent" Icon="{ui:SymbolIcon Play24}" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnPlayPause_Click" />
                     <ui:Button x:Name="BtnNext" Appearance="Transparent" Icon="{ui:SymbolIcon Next24}" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnNext_Click" />
                     <ui:Button x:Name="BtnHeart" Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}" Foreground="#FF3B30" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnHeart_Click" />
-                    <ui:Button x:Name="BtnLockCompact" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen24}" Padding="5" Margin="0,0,2,0" ToolTip="Konumu Kilitle / Kilidi Aç" Cursor="Hand" Click="BtnLock_Click" />
+                    <ui:Button x:Name="BtnLockCompact" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen24}" Padding="5" Margin="0,0,2,0" ToolTip="Kilit Modu (Değiştirmek için tıkla)" Cursor="Hand" Click="BtnLock_Click" />
                     <ui:Button x:Name="BtnExpand" Appearance="Transparent" Icon="{ui:SymbolIcon ChevronUp24}" Padding="5" ToolTip="Genişletilmiş Görünüm" Cursor="Hand" Click="BtnExpand_Click" />
                 </StackPanel>
 
@@ -90,7 +99,7 @@
             <!-- ============================================== -->
             <!-- 2. EXPANDED FLYOUT VIEW (Unified Media Player) -->
             <!-- ============================================== -->
-            <Grid x:Name="ExpandedView" Visibility="Collapsed" Margin="14,10,14,10">
+            <Grid x:Name="ExpandedView" Visibility="Collapsed" Margin="14,10,14,10" Opacity="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /> <!-- Header: Badge + Window Actions -->
                     <RowDefinition Height="Auto" /> <!-- Track Info: Large Art + Metadata -->
@@ -112,8 +121,8 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:Button x:Name="BtnLockExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen24}" Padding="5" Margin="0,0,2,0" ToolTip="Konumu Kilitle / Kilidi Aç" Cursor="Hand" Click="BtnLock_Click" />
-                        <ui:Button x:Name="BtnRepositionExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon Location24}" Padding="5" Margin="0,0,2,0" ToolTip="Konumu Değiştir" Cursor="Hand" Click="MenuChoosePos_Click" />
+                        <ui:Button x:Name="BtnLockExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen24}" Padding="5" Margin="0,0,2,0" ToolTip="Kilit Modu" Cursor="Hand" Click="BtnLock_Click" />
+                        <ui:Button x:Name="BtnRepositionExpanded" Appearance="Transparent" Icon="{ui:SymbolIcon Location24}" Padding="5" Margin="0,0,2,0" ToolTip="Görünüm &amp; Konum Değiştir" Cursor="Hand" Click="MenuChoosePos_Click" />
                         <ui:Button x:Name="BtnCollapse" Appearance="Transparent" Icon="{ui:SymbolIcon ChevronDown24}" Padding="5" ToolTip="Daralt" Cursor="Hand" Click="BtnExpand_Click" />
                     </StackPanel>
                 </Grid>
