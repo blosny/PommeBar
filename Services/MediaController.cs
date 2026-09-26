@@ -87,6 +87,30 @@ public class MediaController
         catch { }
     }
 
+    public MediaFilterMode FilterMode { get; set; } = MediaFilterMode.MusicOnly;
+
+    public void SetFilterMode(MediaFilterMode mode)
+    {
+        FilterMode = mode;
+        UpdateCurrentSession();
+    }
+
+    private bool MatchesFilter(string? appId)
+    {
+        if (FilterMode == MediaFilterMode.AllMedia) return true;
+        string id = (appId ?? "").ToLowerInvariant();
+        bool isSpotify = id.Contains("spotify");
+        bool isApple = id.Contains("applemusic") || id.Contains("apple");
+
+        return FilterMode switch
+        {
+            MediaFilterMode.AppleMusicOnly => isApple,
+            MediaFilterMode.SpotifyOnly => isSpotify,
+            MediaFilterMode.MusicOnly => isSpotify || isApple,
+            _ => true
+        };
+    }
+
     private GlobalSystemMediaTransportControlsSession? PickBestSession()
     {
         if (_sessionManager == null) return null;
@@ -100,11 +124,20 @@ public class MediaController
 
         if (sessions == null || sessions.Count == 0)
         {
-            return _sessionManager.GetCurrentSession();
+            var cur = _sessionManager.GetCurrentSession();
+            return (cur != null && MatchesFilter(cur.SourceAppUserModelId)) ? cur : null;
         }
 
-        // 1. Prioritize any session that is currently PLAYING
-        foreach (var s in sessions)
+        var filtered = sessions.Where(s => MatchesFilter(s.SourceAppUserModelId)).ToList();
+        if (FilterMode != MediaFilterMode.AllMedia && filtered.Count == 0)
+        {
+            return null;
+        }
+
+        var candidateList = filtered.Count > 0 ? filtered : sessions;
+
+        // 1. Prioritize playing session matching filter
+        foreach (var s in candidateList)
         {
             try
             {
@@ -118,7 +151,7 @@ public class MediaController
         }
 
         // 2. Prioritize dedicated music services (Spotify, Apple Music) even if paused
-        foreach (var s in sessions)
+        foreach (var s in candidateList)
         {
             try
             {
@@ -131,8 +164,8 @@ public class MediaController
             catch { }
         }
 
-        // 3. Fallback to Windows default current session
-        return _sessionManager.GetCurrentSession() ?? sessions.FirstOrDefault();
+        // 3. Fallback
+        return candidateList.FirstOrDefault();
     }
 
     private void UpdateCurrentSession()

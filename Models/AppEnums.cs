@@ -21,3 +21,19 @@ public enum MediaAppType
     Browser,
     Other
 }
+
+public enum MediaFilterMode
+{
+    MusicOnly,       // Default: Only Apple Music & Spotify (filters out Chrome, YouTube, Edge, etc.)
+    AllMedia,        // All system media sessions
+    AppleMusicOnly,  // Lock to Apple Music only
+    SpotifyOnly      // Lock to Spotify only
+}
+
+public enum WidgetSizePreset
+{
+    Compact,   // 360px
+    Standard,  // 430px (default)
+    Wide,      // 500px
+    Custom
+}
