@@ -1,5 +1,13 @@
 # PommeBar
 
+<p align="center">
+  <a href="https://github.com/blosny/PommeBar/releases/latest"><img src="https://img.shields.io/github/v/release/blosny/PommeBar?color=blue&style=flat-square" alt="Latest Release" /></a>
+  <a href="https://github.com/blosny/PommeBar/releases"><img src="https://img.shields.io/github/downloads/blosny/PommeBar/total?color=2ea44f&style=flat-square" alt="Total Downloads" /></a>
+  <a href="https://github.com/blosny/PommeBar/stargazers"><img src="https://img.shields.io/github/stars/blosny/PommeBar?style=flat-square" alt="GitHub Stars" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/blosny/PommeBar?style=flat-square" alt="License" /></a>
+  <img src="https://img.shields.io/badge/.NET-8.0%20WPF-512BD4?style=flat-square" alt=".NET 8" />
+</p>
+
 A modern, lightweight Windows 11 taskbar companion and mini-player for **Apple Music** and **Spotify**.
 
 Built with .NET 8 and WPF, PommeBar brings instant playback controls, album art, interactive timeline scrubbing, master volume control, and native favorite/like integration right to your taskbar.
