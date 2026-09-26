@@ -9,6 +9,9 @@ public class AppSettings
     public string PositionPreset { get; set; } = "left";
     public string LockMode { get; set; } = "free";
     public string DockMode { get; set; } = "floating";
+    public string SizePreset { get; set; } = "standard";
+    public double CustomWidth { get; set; } = 430;
+    public string MediaFilter { get; set; } = "musiconly";
     public double CustomLeft { get; set; } = 20;
     public double CustomTop { get; set; } = 800;
     public bool StartMinimizedToTray { get; set; } = false;
