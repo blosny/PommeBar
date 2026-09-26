@@ -12,20 +12,10 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Controls;
 
+using PommeBar.Models;
+using PommeBar.Services;
+
 namespace PommeBar;
-
-public enum DockMode
-{
-    Floating,   // Island mode: 8-10px above taskbar
-    Embedded    // Taskbar mode: sits directly on the taskbar surface
-}
-
-public enum LockMode
-{
-    Free,        // Unlocked, draggable
-    Locked,      // Position locked
-    SuperLocked  // Persistent topmost overlay over games and full screen windows
-}
 
 public partial class MainWindow : Window
 {
@@ -46,7 +36,6 @@ public partial class MainWindow : Window
 
     private readonly MediaController _mediaController;
     private readonly TrayIconManager _trayManager;
-    private static readonly string ConfigPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "position.cfg");
     private readonly System.Windows.Threading.DispatcherTimer _timelineTimer;
     private readonly System.Windows.Threading.DispatcherTimer _superLockTimer;
     
@@ -176,21 +165,19 @@ public partial class MainWindow : Window
         if (mode == DockMode.Floating)
         {
             RootBorder.CornerRadius = new CornerRadius(16);
-            RootBorder.Margin = new Thickness(6);
+            RootBorder.Margin = new Thickness(4);
             RootShadow.Opacity = 0.45;
-            CompactBar.Height = 58;
-            CompactArtBorder.Width = 42;
-            CompactArtBorder.Height = 42;
         }
         else
         {
-            RootBorder.CornerRadius = new CornerRadius(8);
-            RootBorder.Margin = new Thickness(2, 1, 2, 1);
-            RootShadow.Opacity = 0.15;
-            CompactBar.Height = 44;
-            CompactArtBorder.Width = 36;
-            CompactArtBorder.Height = 36;
+            RootBorder.CornerRadius = new CornerRadius(10, 10, 0, 0);
+            RootBorder.Margin = new Thickness(2, 2, 2, 0);
+            RootShadow.Opacity = 0.20;
         }
+
+        CompactBar.Height = 52;
+        CompactArtBorder.Width = 38;
+        CompactArtBorder.Height = 38;
 
         ApplyPosition(_currentPositionPreset);
 
@@ -292,19 +279,16 @@ public partial class MainWindow : Window
     private void ClampToWorkArea()
     {
         var workArea = SystemParameters.WorkArea;
-        double screenHeight = SystemParameters.PrimaryScreenHeight;
-        double h = this.Height > 0 ? this.Height : 70;
-        double w = this.Width > 0 ? this.Width : 450;
+        double h = this.Height > 0 ? this.Height : 68;
+        double w = this.Width > 0 ? this.Width : 430;
 
-        if (_currentDockMode == DockMode.Embedded && !_isExpanded)
+        if (_currentDockMode == DockMode.Embedded && !_isExpanded && _currentPositionPreset != "custom")
         {
-            // Sits directly on the taskbar surface
-            this.Top = workArea.Bottom + 1;
+            this.Top = workArea.Bottom - h + 1;
         }
         else
         {
-            // Sits comfortably above the taskbar
-            double maxTop = workArea.Bottom - h - 10;
+            double maxTop = workArea.Bottom - h - (_currentDockMode == DockMode.Embedded ? -1 : 10);
             if (this.Top > maxTop)
             {
                 this.Top = maxTop;
@@ -330,49 +314,30 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (File.Exists(ConfigPath))
+            this.Width = 430;
+            this.Height = 68;
+            _isExpanded = false;
+
+            var settings = SettingsManager.Load();
+            _currentPositionPreset = string.IsNullOrEmpty(settings.PositionPreset) ? "left" : settings.PositionPreset;
+
+            LockMode lockMode = settings.LockMode switch
             {
-                var lines = File.ReadAllLines(ConfigPath);
-                if (lines.Length > 0 && !string.IsNullOrWhiteSpace(lines[0]))
-                {
-                    _currentPositionPreset = lines[0].Trim().ToLower();
-                }
+                "superlocked" => LockMode.SuperLocked,
+                "locked" => LockMode.Locked,
+                _ => LockMode.Free
+            };
+            SetLockMode(lockMode, save: false);
 
-                // Lock mode parsing
-                if (lines.Length > 1 && !string.IsNullOrWhiteSpace(lines[1]))
-                {
-                    string lockStr = lines[1].Trim().ToLower();
-                    if (lockStr == "superlocked") SetLockMode(LockMode.SuperLocked, save: false);
-                    else if (lockStr == "locked" || lockStr == "true") SetLockMode(LockMode.Locked, save: false);
-                    else SetLockMode(LockMode.Free, save: false);
-                }
+            _currentDockMode = settings.DockMode == "embedded" ? DockMode.Embedded : DockMode.Floating;
+            SetDockMode(_currentDockMode, save: false);
 
-                // Dock mode parsing
-                if (lines.Length >= 5 && !string.IsNullOrWhiteSpace(lines[4]))
-                {
-                    string modeStr = lines[4].Trim().ToLower();
-                    _currentDockMode = modeStr == "embedded" ? DockMode.Embedded : DockMode.Floating;
-                }
-
-                SetDockMode(_currentDockMode, save: false);
-
-                if (lines.Length >= 4 && _currentPositionPreset == "custom" 
-                    && double.TryParse(lines[2], NumberStyles.Any, CultureInfo.InvariantCulture, out double l) 
-                    && double.TryParse(lines[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double t))
-                {
-                    this.Left = l;
-                    this.Top = t;
-                    ClampToWorkArea();
-                    return;
-                }
-            }
-            else
+            if (_currentPositionPreset == "custom" && settings.CustomLeft > 0 && settings.CustomTop > 0)
             {
-                var dlg = new PositionDialog();
-                dlg.ShowDialog();
-                _currentPositionPreset = dlg.SelectedPosition;
-                _currentDockMode = dlg.SelectedMode == "embedded" ? DockMode.Embedded : DockMode.Floating;
-                SetDockMode(_currentDockMode, save: false);
+                this.Left = settings.CustomLeft;
+                this.Top = settings.CustomTop;
+                ClampToWorkArea();
+                return;
             }
         }
         catch { }
@@ -385,16 +350,20 @@ public partial class MainWindow : Window
         try
         {
             ClampToWorkArea();
-            string lockVal = _currentLockMode switch
+            var settings = new AppSettings
             {
-                LockMode.SuperLocked => "superlocked",
-                LockMode.Locked => "locked",
-                _ => "free"
+                PositionPreset = _currentPositionPreset,
+                LockMode = _currentLockMode switch
+                {
+                    LockMode.SuperLocked => "superlocked",
+                    LockMode.Locked => "locked",
+                    _ => "free"
+                },
+                DockMode = _currentDockMode == DockMode.Embedded ? "embedded" : "floating",
+                CustomLeft = this.Left,
+                CustomTop = this.Top
             };
-            string modeVal = _currentDockMode == DockMode.Embedded ? "embedded" : "floating";
-
-            string content = $"{_currentPositionPreset}\n{lockVal}\n{this.Left.ToString(CultureInfo.InvariantCulture)}\n{this.Top.ToString(CultureInfo.InvariantCulture)}\n{modeVal}";
-            File.WriteAllText(ConfigPath, content);
+            SettingsManager.Save(settings);
         }
         catch { }
     }
@@ -403,10 +372,14 @@ public partial class MainWindow : Window
     {
         _currentPositionPreset = position;
         var workArea = SystemParameters.WorkArea;
-        double w = this.Width > 0 ? this.Width : 450;
-        double compactHeight = _currentDockMode == DockMode.Embedded ? 46 : 70;
+        double w = 430;
+        double compactHeight = 68;
 
-        this.Height = compactHeight;
+        this.Width = w;
+        if (!_isExpanded)
+        {
+            this.Height = compactHeight;
+        }
 
         switch (position)
         {
@@ -414,7 +387,7 @@ public partial class MainWindow : Window
                 this.Left = workArea.Left + 16;
                 break;
             case "center":
-                this.Left = (workArea.Width - w) / 2;
+                this.Left = workArea.Left + (workArea.Width - w) / 2;
                 break;
             case "right":
             default:
@@ -424,7 +397,7 @@ public partial class MainWindow : Window
 
         if (_currentDockMode == DockMode.Embedded)
         {
-            this.Top = workArea.Bottom + 1;
+            this.Top = workArea.Bottom - compactHeight + 1;
         }
         else
         {
@@ -439,13 +412,13 @@ public partial class MainWindow : Window
     {
         _isExpanded = !_isExpanded;
         var workArea = SystemParameters.WorkArea;
-        double targetHeight = _isExpanded ? 245 : (_currentDockMode == DockMode.Embedded ? 46 : 70);
+        double targetHeight = _isExpanded ? 245 : 68;
 
         // Keep bottom edge firmly anchored
         double currentBottom = this.Top + this.Height;
         if (currentBottom > workArea.Bottom + 20 || currentBottom < workArea.Top + 100)
         {
-            currentBottom = _currentDockMode == DockMode.Embedded ? workArea.Bottom + 46 : workArea.Bottom - 10;
+            currentBottom = _currentDockMode == DockMode.Embedded ? workArea.Bottom + 1 : workArea.Bottom - 10;
         }
 
         double targetTop = currentBottom - targetHeight;

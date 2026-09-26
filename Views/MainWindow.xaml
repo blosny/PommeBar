@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:PommeBar"
         mc:Ignorable="d"
-        Title="PommeBar" Height="70" Width="450"
+        Title="PommeBar" Height="68" Width="430"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -25,17 +25,17 @@
 
     <Window.ContextMenu>
         <ContextMenu>
-            <MenuItem Header="🔒 Kilit Modu">
-                <MenuItem x:Name="MenuLockFree" Header="🔓 Serbest (Taşınabilir)" Click="MenuLockFree_Click" />
-                <MenuItem x:Name="MenuLockFixed" Header="🔒 Sabit (Görev Çubuğu Kilidi)" Click="MenuLockFixed_Click" />
-                <MenuItem x:Name="MenuLockSuper" Header="📌 Süper Kilit (Oyun &amp; En Üst Katman)" Click="MenuLockSuper_Click" />
+            <MenuItem Header="Kilit Modu">
+                <MenuItem x:Name="MenuLockFree" Header="Serbest (Taşınabilir)" Click="MenuLockFree_Click" />
+                <MenuItem x:Name="MenuLockFixed" Header="Sabit (Görev Çubuğu Kilidi)" Click="MenuLockFixed_Click" />
+                <MenuItem x:Name="MenuLockSuper" Header="Süper Kilit (Oyun ve En Üst Katman)" Click="MenuLockSuper_Click" />
             </MenuItem>
-            <MenuItem Header="🎨 Görünüm Modu">
-                <MenuItem x:Name="MenuModeFloating" Header="🏝️ Ada Modu (Görev Çubuğu Üstü)" Click="MenuModeFloating_Click" />
-                <MenuItem x:Name="MenuModeEmbedded" Header="📌 Görev Çubuğuna Entegre (Sıfır Boşluk)" Click="MenuModeEmbedded_Click" />
+            <MenuItem Header="Görünüm Modu">
+                <MenuItem x:Name="MenuModeFloating" Header="Ada Modu (Görev Çubuğu Üstü)" Click="MenuModeFloating_Click" />
+                <MenuItem x:Name="MenuModeEmbedded" Header="Görev Çubuğuna Entegre" Click="MenuModeEmbedded_Click" />
             </MenuItem>
             <Separator />
-            <MenuItem Header="📍 Görünüm &amp; Konum Ayarla..." Click="MenuChoosePos_Click" />
+            <MenuItem Header="Görünüm ve Konum Ayarla..." Click="MenuChoosePos_Click" />
             <MenuItem Header="Hızlı Konum">
                 <MenuItem Header="Sağ (Saat Yanı)" Click="MenuPosRight_Click" />
                 <MenuItem Header="Orta (İkonlar Yanı)" Click="MenuPosCenter_Click" />
@@ -48,7 +48,7 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <Border x:Name="RootBorder" CornerRadius="16" Background="#EB1C1C1E" BorderBrush="#35FFFFFF" BorderThickness="1" Margin="6">
+    <Border x:Name="RootBorder" CornerRadius="16" Background="#EB1C1C1E" BorderBrush="#35FFFFFF" BorderThickness="1" Margin="4">
         <Border.Effect>
             <DropShadowEffect x:Name="RootShadow" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.45" Color="Black" />
         </Border.Effect>
@@ -57,7 +57,7 @@
             <!-- ============================================== -->
             <!-- 1. COMPACT BAR VIEW (Normal Taskbar Widget)    -->
             <!-- ============================================== -->
-            <Grid x:Name="CompactBar" Height="58" Margin="12,0" Visibility="Visible">
+            <Grid x:Name="CompactBar" Height="52" Margin="10,0" VerticalAlignment="Center" Visibility="Visible">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -65,12 +65,12 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Compact Album Art -->
-                <Border x:Name="CompactArtBorder" Width="42" Height="42" CornerRadius="8" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" ToolTip="Uygulamayı Aç (Apple Music / Spotify)" MouseLeftButtonDown="SongInfo_Click">
+                <Border x:Name="CompactArtBorder" Width="38" Height="38" CornerRadius="8" Background="#20FFFFFF" VerticalAlignment="Center" Cursor="Hand" ToolTip="Uygulamayı Aç (Apple Music / Spotify)" MouseLeftButtonDown="SongInfo_Click">
                     <Grid>
-                        <ui:SymbolIcon x:Name="AlbumArtPlaceholder" Symbol="MusicNote224" FontSize="20" Foreground="#66FFFFFF" />
+                        <ui:SymbolIcon x:Name="AlbumArtPlaceholder" Symbol="MusicNote220" FontSize="18" Foreground="#66FFFFFF" />
                         <Image x:Name="AlbumArtImage" Stretch="UniformToFill" Visibility="Collapsed">
                             <Image.Clip>
-                                <RectangleGeometry Rect="0,0,42,42" RadiusX="8" RadiusY="8"/>
+                                <RectangleGeometry Rect="0,0,38,38" RadiusX="8" RadiusY="8"/>
                             </Image.Clip>
                         </Image>
                     </Grid>
@@ -78,22 +78,22 @@
 
                 <!-- Compact Song Info -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                    <TextBlock x:Name="SongTitleText" Text="Müzik Bekleniyor..." FontWeight="SemiBold" FontSize="14" Foreground="White" TextTrimming="CharacterEllipsis" />
-                    <TextBlock x:Name="ArtistNameText" Text="PommeBar" FontSize="12" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                    <TextBlock x:Name="SongTitleText" Text="Müzik Bekleniyor..." FontWeight="SemiBold" FontSize="13" Foreground="White" TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="ArtistNameText" Text="Apple Music veya Spotify Başlatın" FontSize="11" Foreground="#AAFFFFFF" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
                 </StackPanel>
 
                 <!-- Compact Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnPrevious" Appearance="Transparent" Icon="{ui:SymbolIcon Previous24}" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnPrevious_Click" />
-                    <ui:Button x:Name="BtnPlayPause" Appearance="Transparent" Icon="{ui:SymbolIcon Play24}" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnPlayPause_Click" />
-                    <ui:Button x:Name="BtnNext" Appearance="Transparent" Icon="{ui:SymbolIcon Next24}" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnNext_Click" />
-                    <ui:Button x:Name="BtnHeart" Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}" Foreground="#FF3B30" Padding="5" Margin="0,0,2,0" Cursor="Hand" Click="BtnHeart_Click" />
-                    <ui:Button x:Name="BtnLockCompact" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen24}" Padding="5" Margin="0,0,2,0" ToolTip="Kilit Modu (Değiştirmek için tıkla)" Cursor="Hand" Click="BtnLock_Click" />
-                    <ui:Button x:Name="BtnExpand" Appearance="Transparent" Icon="{ui:SymbolIcon ChevronUp24}" Padding="5" ToolTip="Genişletilmiş Görünüm" Cursor="Hand" Click="BtnExpand_Click" />
+                    <ui:Button x:Name="BtnPrevious" Appearance="Transparent" Icon="{ui:SymbolIcon Previous20}" Padding="4" Margin="0,0,1,0" Cursor="Hand" Click="BtnPrevious_Click" />
+                    <ui:Button x:Name="BtnPlayPause" Appearance="Transparent" Icon="{ui:SymbolIcon Play20}" Padding="4" Margin="0,0,1,0" Cursor="Hand" Click="BtnPlayPause_Click" />
+                    <ui:Button x:Name="BtnNext" Appearance="Transparent" Icon="{ui:SymbolIcon Next20}" Padding="4" Margin="0,0,1,0" Cursor="Hand" Click="BtnNext_Click" />
+                    <ui:Button x:Name="BtnHeart" Appearance="Transparent" Icon="{ui:SymbolIcon Heart20}" Foreground="#FF3B30" Padding="4" Margin="0,0,1,0" Cursor="Hand" Click="BtnHeart_Click" />
+                    <ui:Button x:Name="BtnLockCompact" Appearance="Transparent" Icon="{ui:SymbolIcon LockOpen20}" Padding="4" Margin="0,0,1,0" ToolTip="Kilit Modu (Değiştirmek için tıkla)" Cursor="Hand" Click="BtnLock_Click" />
+                    <ui:Button x:Name="BtnExpand" Appearance="Transparent" Icon="{ui:SymbolIcon ChevronUp20}" Padding="4" ToolTip="Genişletilmiş Görünüm" Cursor="Hand" Click="BtnExpand_Click" />
                 </StackPanel>
 
                 <!-- Sleek Track Progress Line -->
-                <ProgressBar Grid.ColumnSpan="3" x:Name="TrackProgressBar" Minimum="0" Maximum="100" Value="0" Height="2" VerticalAlignment="Bottom" Background="Transparent" Foreground="#FF3B30" BorderThickness="0" Margin="2,0,2,2" />
+                <ProgressBar Grid.ColumnSpan="3" x:Name="TrackProgressBar" Minimum="0" Maximum="100" Value="0" Height="2" VerticalAlignment="Bottom" Background="Transparent" Foreground="#FF3B30" BorderThickness="0" Margin="2,0,2,1" />
             </Grid>
 
             <!-- ============================================== -->

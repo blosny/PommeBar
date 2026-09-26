@@ -7,17 +7,9 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Windows.Media.Control;
 using Windows.Storage.Streams;
+using PommeBar.Models;
 
 namespace PommeBar;
-
-public enum MediaAppType
-{
-    Unknown,
-    AppleMusic,
-    Spotify,
-    Browser,
-    Other
-}
 
 public class MediaController
 {
@@ -248,8 +240,8 @@ public class MediaController
             var properties = await _currentSession.TryGetMediaPropertiesAsync();
             if (properties == null) return;
 
-            string title = string.IsNullOrEmpty(properties.Title) ? "Bilinmeyen Şarkı" : properties.Title;
-            string artist = string.IsNullOrEmpty(properties.Artist) ? "Bilinmeyen Sanatçı" : properties.Artist;
+            string title = string.IsNullOrEmpty(properties.Title) ? "Müzik Bekleniyor..." : properties.Title;
+            string artist = string.IsNullOrEmpty(properties.Artist) ? "Apple Music veya Spotify Başlatın" : properties.Artist;
             BitmapImage? albumArt = null;
 
             if (properties.Thumbnail != null)

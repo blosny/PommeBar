@@ -1,0 +1,57 @@
+<Window x:Class="PommeBar.PositionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="PommeBar Görünüm ve Konum" Height="300" Width="460"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True">
+    <Border CornerRadius="16" Background="#F01C1C1E" BorderBrush="#40FFFFFF" BorderThickness="1" Margin="8">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="3" Direction="270" Opacity="0.5" Color="Black" />
+        </Border.Effect>
+        <Grid Margin="20,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Text="PommeBar Görünüm ve Konum" FontWeight="Bold" FontSize="16" Foreground="White" HorizontalAlignment="Center" />
+            <TextBlock Grid.Row="1" Text="Widget görünüm stilini ve görev çubuğu hizalamasını seçin" FontSize="12" Foreground="#B0FFFFFF" HorizontalAlignment="Center" Margin="0,4,0,14" />
+
+            <!-- 1. Appearance Mode Selection -->
+            <Grid Grid.Row="2" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:Button x:Name="BtnModeFloating" Content="Ada Modu (Çubuk Üstü)" Margin="3" Padding="10" HorizontalAlignment="Stretch" Cursor="Hand" Click="BtnModeFloating_Click" />
+                <ui:Button Grid.Column="1" x:Name="BtnModeEmbedded" Content="Görev Çubuğuna Entegre" Margin="3" Padding="10" HorizontalAlignment="Stretch" Cursor="Hand" Click="BtnModeEmbedded_Click" />
+            </Grid>
+
+            <!-- 2. Position Selection -->
+            <UniformGrid Grid.Row="3" Columns="3" Margin="0,0,0,16">
+                <ui:Button x:Name="BtnLeft" Content="Sol (Başlat)" Margin="3" Padding="8" HorizontalAlignment="Stretch" Cursor="Hand" Click="BtnLeft_Click" />
+                <ui:Button x:Name="BtnCenter" Content="Orta (İkonlar)" Margin="3" Padding="8" HorizontalAlignment="Stretch" Cursor="Hand" Click="BtnCenter_Click" />
+                <ui:Button x:Name="BtnRight" Content="Sağ (Saat Yanı)" Margin="3" Padding="8" HorizontalAlignment="Stretch" Cursor="Hand" Click="BtnRight_Click" />
+            </UniformGrid>
+
+            <!-- 3. Actions -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:Button Grid.Column="1" Content="İptal" Appearance="Transparent" Padding="14,6" Margin="0,0,8,0" Cursor="Hand" Click="BtnCancel_Click" />
+                <ui:Button Grid.Column="2" x:Name="BtnApply" Content="Uygula" Appearance="Primary" Padding="20,6" Cursor="Hand" Click="BtnApply_Click" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

@@ -133,15 +133,20 @@ pomme-bar/
 │   ├── demo.gif                    # Animated demonstration for documentation
 │   ├── preview_compact.png         # Compact mode screenshot
 │   └── preview_expanded.png        # Expanded flyout screenshot
-├── App.xaml / App.xaml.cs          # WPF application lifecycle and theme resources
-├── MainWindow.xaml / .cs           # Primary widget UI, flyout animations, drag and lock logic
-├── PositionDialog.xaml / .cs       # Initial setup and dock mode selection dialog
-├── MediaController.cs              # Windows SMTC session manager and real-time event listener
-├── AppleMusicAutomation.cs         # UI Automation engine to toggle favorites in Apple Music
-├── SpotifyAutomation.cs            # Desktop client integration and automation for Spotify
-├── VolumeController.cs             # Windows CoreAudio COM wrapper (IAudioEndpointVolume)
-├── StartupManager.cs               # Windows Registry Run key manager for auto-start
-├── TrayIconManager.cs              # Native Win32 system tray notification icon handler
+├── Models/
+│   └── AppEnums.cs                 # Domain enums (DockMode, LockMode, MediaAppType)
+├── Services/
+│   ├── MediaController.cs          # Windows SMTC session manager and media event listener
+│   ├── VolumeController.cs         # Windows CoreAudio COM wrapper (IAudioEndpointVolume)
+│   ├── SettingsManager.cs          # Configuration manager (%APPDATA%\PommeBar\settings.json)
+│   ├── StartupManager.cs           # Windows Registry Run key manager for auto-start
+│   ├── TrayIconManager.cs          # Native Win32 system tray notification icon handler
+│   ├── AppleMusicAutomation.cs     # UI Automation engine to toggle favorites in Apple Music
+│   └── SpotifyAutomation.cs        # Desktop client automation for Spotify
+├── Views/
+│   ├── MainWindow.xaml / .cs       # Primary widget UI, flyout animations, drag & lock logic
+│   └── PositionDialog.xaml / .cs   # Dock mode and position configuration dialog
+├── App.xaml / App.xaml.cs          # WPF application lifecycle and Fluent theme resources
 ├── PommeBar.csproj                 # .NET 8 project definition and NuGet dependencies
 ├── requirements.txt                # Requirements and dependency specification file
 └── install_dependencies.bat        # One-click dependency restoration script for Windows
