@@ -49,6 +49,10 @@ public partial class MainWindow : Window
     private DockMode _currentDockMode = DockMode.Floating;
     private LockMode _currentLockMode = LockMode.Free;
     private MediaAppType _currentAppType = MediaAppType.Unknown;
+    private string _currentSizePreset = "standard";
+    private double _currentWidth = 430;
+    private MediaFilterMode _currentFilterMode = MediaFilterMode.MusicOnly;
+    private bool _isFavorited = false;
 
     public MainWindow()
     {
@@ -276,11 +280,58 @@ public partial class MainWindow : Window
     private void MenuModeFloating_Click(object sender, RoutedEventArgs e) => SetDockMode(DockMode.Floating);
     private void MenuModeEmbedded_Click(object sender, RoutedEventArgs e) => SetDockMode(DockMode.Embedded);
 
+    private void ApplySize(string sizePreset, double? customWidth = null, bool save = true)
+    {
+        _currentSizePreset = sizePreset;
+        double w = sizePreset switch
+        {
+            "compact" => 360,
+            "wide" => 500,
+            "custom" when customWidth.HasValue && customWidth.Value >= 300 => customWidth.Value,
+            _ => 430
+        };
+
+        _currentWidth = w;
+        this.Width = w;
+
+        if (MenuSizeCompact != null) MenuSizeCompact.IsChecked = sizePreset == "compact";
+        if (MenuSizeStandard != null) MenuSizeStandard.IsChecked = sizePreset == "standard";
+        if (MenuSizeWide != null) MenuSizeWide.IsChecked = sizePreset == "wide";
+
+        ApplyPosition(_currentPositionPreset);
+
+        if (save)
+        {
+            SaveSettings();
+        }
+    }
+
+    private void MenuSizeCompact_Click(object sender, RoutedEventArgs e) => ApplySize("compact");
+    private void MenuSizeStandard_Click(object sender, RoutedEventArgs e) => ApplySize("standard");
+    private void MenuSizeWide_Click(object sender, RoutedEventArgs e) => ApplySize("wide");
+
+    private void SetFilterMode(MediaFilterMode mode, bool save = true)
+    {
+        _currentFilterMode = mode;
+        _mediaController.SetFilterMode(mode);
+
+        if (MenuFilterMusic != null) MenuFilterMusic.IsChecked = mode == MediaFilterMode.MusicOnly;
+        if (MenuFilterAll != null) MenuFilterAll.IsChecked = mode == MediaFilterMode.AllMedia;
+
+        if (save)
+        {
+            SaveSettings();
+        }
+    }
+
+    private void MenuFilterMusic_Click(object sender, RoutedEventArgs e) => SetFilterMode(MediaFilterMode.MusicOnly);
+    private void MenuFilterAll_Click(object sender, RoutedEventArgs e) => SetFilterMode(MediaFilterMode.AllMedia);
+
     private void ClampToWorkArea()
     {
         var workArea = SystemParameters.WorkArea;
         double h = this.Height > 0 ? this.Height : 68;
-        double w = this.Width > 0 ? this.Width : 430;
+        double w = this.Width > 0 ? this.Width : _currentWidth;
 
         if (_currentDockMode == DockMode.Embedded && !_isExpanded && _currentPositionPreset != "custom")
         {
@@ -310,6 +361,51 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ApplyMagneticSnapping()
+    {
+        var workArea = SystemParameters.WorkArea;
+        double w = this.Width > 0 ? this.Width : _currentWidth;
+        double h = this.Height > 0 ? this.Height : 68;
+
+        // 1. Magnetic Taskbar Vertical Snapping
+        double taskbarEmbeddedTop = workArea.Bottom - h + 1;
+        double taskbarFloatingTop = workArea.Bottom - h - 10;
+
+        if (Math.Abs(this.Top - taskbarEmbeddedTop) < 30)
+        {
+            this.Top = taskbarEmbeddedTop;
+            _currentDockMode = DockMode.Embedded;
+            SetDockMode(DockMode.Embedded, save: false);
+        }
+        else if (Math.Abs(this.Top - taskbarFloatingTop) < 30)
+        {
+            this.Top = taskbarFloatingTop;
+            _currentDockMode = DockMode.Floating;
+            SetDockMode(DockMode.Floating, save: false);
+        }
+
+        // 2. Magnetic Horizontal Preset Snapping
+        double leftPreset = workArea.Left + 16;
+        double centerPreset = workArea.Left + (workArea.Width - w) / 2;
+        double rightPreset = workArea.Right - w - 16;
+
+        if (Math.Abs(this.Left - leftPreset) < 35)
+        {
+            this.Left = leftPreset;
+            _currentPositionPreset = "left";
+        }
+        else if (Math.Abs(this.Left - centerPreset) < 40)
+        {
+            this.Left = centerPreset;
+            _currentPositionPreset = "center";
+        }
+        else if (Math.Abs(this.Left - rightPreset) < 35)
+        {
+            this.Left = rightPreset;
+            _currentPositionPreset = "right";
+        }
+    }
+
     private void LoadSettings()
     {
         try
@@ -331,6 +427,13 @@ public partial class MainWindow : Window
 
             _currentDockMode = settings.DockMode == "embedded" ? DockMode.Embedded : DockMode.Floating;
             SetDockMode(_currentDockMode, save: false);
+
+            _currentSizePreset = string.IsNullOrEmpty(settings.SizePreset) ? "standard" : settings.SizePreset;
+            _currentWidth = settings.CustomWidth >= 300 ? settings.CustomWidth : 430;
+            ApplySize(_currentSizePreset, _currentWidth, save: false);
+
+            _currentFilterMode = settings.MediaFilter == "allmedia" ? MediaFilterMode.AllMedia : MediaFilterMode.MusicOnly;
+            SetFilterMode(_currentFilterMode, save: false);
 
             if (_currentPositionPreset == "custom" && settings.CustomLeft > 0 && settings.CustomTop > 0)
             {
@@ -360,6 +463,9 @@ public partial class MainWindow : Window
                     _ => "free"
                 },
                 DockMode = _currentDockMode == DockMode.Embedded ? "embedded" : "floating",
+                SizePreset = _currentSizePreset,
+                CustomWidth = _currentWidth,
+                MediaFilter = _currentFilterMode == MediaFilterMode.AllMedia ? "allmedia" : "musiconly",
                 CustomLeft = this.Left,
                 CustomTop = this.Top
             };
@@ -372,7 +478,7 @@ public partial class MainWindow : Window
     {
         _currentPositionPreset = position;
         var workArea = SystemParameters.WorkArea;
-        double w = 430;
+        double w = _currentWidth;
         double compactHeight = 68;
 
         this.Width = w;
@@ -461,12 +567,21 @@ public partial class MainWindow : Window
 
     private void MenuChoosePos_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new PositionDialog(_currentPositionPreset, _currentDockMode == DockMode.Embedded ? "embedded" : "floating");
+        var dlg = new PositionDialog(
+            _currentPositionPreset, 
+            _currentDockMode == DockMode.Embedded ? "embedded" : "floating",
+            _currentSizePreset,
+            _currentFilterMode == MediaFilterMode.AllMedia ? "allmedia" : "musiconly"
+        );
+
         if (dlg.ShowDialog() == true)
         {
             _currentDockMode = dlg.SelectedMode == "embedded" ? DockMode.Embedded : DockMode.Floating;
             SetDockMode(_currentDockMode, save: false);
+            ApplySize(dlg.SelectedSize, save: false);
+            SetFilterMode(dlg.SelectedFilter == "allmedia" ? MediaFilterMode.AllMedia : MediaFilterMode.MusicOnly, save: false);
             ApplyPosition(dlg.SelectedPosition);
+            SaveSettings();
         }
     }
 
@@ -567,6 +682,8 @@ public partial class MainWindow : Window
                 ExpandedArtImage.Visibility = Visibility.Collapsed;
                 ExpandedArtPlaceholder.Visibility = Visibility.Visible;
             }
+
+            _ = CheckFavoriteStatusAsync();
         }
         catch (Exception ex)
         {
@@ -669,11 +786,70 @@ public partial class MainWindow : Window
         await _mediaController.SkipNextAsync();
     }
 
+    private void UpdateHeartIcon(bool isFavorited)
+    {
+        _isFavorited = isFavorited;
+        var color = isFavorited ? Color.FromRgb(255, 59, 48) : Color.FromArgb(180, 255, 255, 255);
+        var brush = new SolidColorBrush(color);
+
+        if (BtnHeart != null)
+        {
+            BtnHeart.Icon = new Wpf.Ui.Controls.SymbolIcon 
+            { 
+                Symbol = SymbolRegular.Heart20, 
+                Filled = isFavorited 
+            };
+            BtnHeart.Foreground = brush;
+            BtnHeart.ToolTip = isFavorited ? "Favorilerden Çıkar" : "Favorilere Ekle";
+        }
+
+        if (BtnHeartExpanded != null)
+        {
+            BtnHeartExpanded.Icon = new Wpf.Ui.Controls.SymbolIcon 
+            { 
+                Symbol = SymbolRegular.Heart24, 
+                Filled = isFavorited 
+            };
+            BtnHeartExpanded.Foreground = brush;
+            BtnHeartExpanded.ToolTip = isFavorited ? "Favorilerden Çıkar" : "Favorilere Ekle";
+        }
+    }
+
+    private async Task CheckFavoriteStatusAsync()
+    {
+        try
+        {
+            bool? fav = null;
+            if (_currentAppType == MediaAppType.Spotify)
+            {
+                fav = await SpotifyAutomation.GetFavoriteStatusAsync();
+            }
+            else if (_currentAppType == MediaAppType.AppleMusic)
+            {
+                fav = await AppleMusicAutomation.GetFavoriteStatusAsync();
+            }
+
+            if (fav.HasValue)
+            {
+                App.Current.Dispatcher.Invoke(() => UpdateHeartIcon(fav.Value));
+            }
+            else
+            {
+                App.Current.Dispatcher.Invoke(() => UpdateHeartIcon(false));
+            }
+        }
+        catch { }
+    }
+
     private async void BtnHeart_Click(object sender, RoutedEventArgs e)
     {
         e.Handled = true;
         BtnHeart.IsEnabled = false;
         if (BtnHeartExpanded != null) BtnHeartExpanded.IsEnabled = false;
+
+        // Immediate optimistic feedback
+        UpdateHeartIcon(!_isFavorited);
+
         try
         {
             if (_currentAppType == MediaAppType.Spotify)
@@ -684,6 +860,9 @@ public partial class MainWindow : Window
             {
                 await AppleMusicAutomation.ToggleFavoriteAsync();
             }
+
+            await Task.Delay(600);
+            await CheckFavoriteStatusAsync();
         }
         finally
         {
@@ -700,6 +879,7 @@ public partial class MainWindow : Window
         {
             this.DragMove();
             _currentPositionPreset = "custom";
+            ApplyMagneticSnapping();
             ClampToWorkArea();
             SaveSettings();
         }

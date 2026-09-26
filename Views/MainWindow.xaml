@@ -34,6 +34,15 @@
                 <MenuItem x:Name="MenuModeFloating" Header="Ada Modu (Görev Çubuğu Üstü)" Click="MenuModeFloating_Click" />
                 <MenuItem x:Name="MenuModeEmbedded" Header="Görev Çubuğuna Entegre" Click="MenuModeEmbedded_Click" />
             </MenuItem>
+            <MenuItem Header="Boyut">
+                <MenuItem x:Name="MenuSizeCompact" Header="Kompakt (360px)" Click="MenuSizeCompact_Click" />
+                <MenuItem x:Name="MenuSizeStandard" Header="Standart (430px)" Click="MenuSizeStandard_Click" />
+                <MenuItem x:Name="MenuSizeWide" Header="Geniş (500px)" Click="MenuSizeWide_Click" />
+            </MenuItem>
+            <MenuItem Header="Medya Kaynağı">
+                <MenuItem x:Name="MenuFilterMusic" Header="Sadece Apple Music ve Spotify" Click="MenuFilterMusic_Click" />
+                <MenuItem x:Name="MenuFilterAll" Header="Tüm Medya (YouTube Dahil)" Click="MenuFilterAll_Click" />
+            </MenuItem>
             <Separator />
             <MenuItem Header="Görünüm ve Konum Ayarla..." Click="MenuChoosePos_Click" />
             <MenuItem Header="Hızlı Konum">
