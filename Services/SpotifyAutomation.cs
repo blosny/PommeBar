@@ -112,4 +112,50 @@ public static class SpotifyAutomation
             }
         });
     }
+
+    public static async Task<bool?> GetFavoriteStatusAsync()
+    {
+        return await Task.Run<bool?>(() =>
+        {
+            try
+            {
+                var processes = Process.GetProcessesByName("Spotify");
+                if (processes.Length == 0) return null;
+
+                foreach (var proc in processes)
+                {
+                    if (proc.MainWindowHandle == IntPtr.Zero) continue;
+                    var spotifyWindow = AutomationElement.FromHandle(proc.MainWindowHandle);
+                    if (spotifyWindow == null) continue;
+
+                    var buttonCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Button);
+                    var buttons = spotifyWindow.FindAll(TreeScope.Descendants, buttonCondition);
+
+                    foreach (AutomationElement btn in buttons)
+                    {
+                        try
+                        {
+                            string name = (btn.Current.Name ?? "").ToLowerInvariant();
+
+                            if (name.Contains("remove from your library") ||
+                                name.Contains("remove from liked songs") ||
+                                name.Contains("beğenilenlerden çıkar"))
+                            {
+                                return true;
+                            }
+                            if (name.Contains("save to your library") ||
+                                name.Contains("add to liked songs") ||
+                                name.Contains("beğenilenlere ekle"))
+                            {
+                                return false;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { }
+            return null;
+        });
+    }
 }
